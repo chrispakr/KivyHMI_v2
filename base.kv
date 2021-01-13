@@ -1,0 +1,20 @@
+#:import utils kivy.utils
+#:import getHexCol kivy.utils.get_color_from_hex
+#:include Screen_ManualControl.kv
+#:include Screen_SelectInitMethod.kv
+#:include Screen_LoadFilm.kv
+#:include Screen_InitFilm.kv
+#:include Screen_HomeScreen.kv
+#:include Screen_initHmi.kv
+
+#BaseScreenManager:
+#    id: baseScreenManagerID
+#    ScreenInitHmi:
+#        name: "screenInitHmi"
+#    BaseScreen:
+#        name: "screenBase"
+
+
+BaseScreenManager:
+    id: smBaseScreenID #Put an ID to your ScreenManager class
+    current: "screenInitHmi"

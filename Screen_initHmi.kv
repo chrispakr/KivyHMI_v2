@@ -1,0 +1,80 @@
+<StatusLed_Hmi@FloatLayout>:
+    isOnline: False
+    size_hint: None, None
+    width: 18
+    height: 10
+    canvas:
+        Color:
+            rgb: utils.get_color_from_hex("#ff0000") if self.isOnline == False else utils.get_color_from_hex("#22f400") if self.isOnline == True else utils.get_color_from_hex("#22f400")
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [3]
+
+<InitComponents@RelativeLayout>:
+    isOnline: False
+    size_hint: None, None
+    size: 300, 20
+    text: "start MainController...\n"
+    Label:
+        #size_hint: (.5, .05)
+        size_hint_x: None
+        width: root.width
+        height: root.height
+        x: 30
+        y: -8
+#        canvas.before:
+#            Color:
+#                rgb: utils.get_color_from_hex("#151515")
+#            Rectangle:
+#                pos: 0,0
+#                size: self.size
+        halign: "left"
+        multiline: True
+        font_size: 14
+        #text_size: self.size
+        text: root.text
+        on_texture_size: if self.texture: self.width = self.texture.width
+    StatusLed_Hmi:
+        pos: 0,5
+        isOnline: root.isOnline
+
+
+
+<ScreenInitHmi>:
+    on_enter: app.curScreenName = "InitHmi"
+
+    Image:
+        source: "pictures/BootScreen.jpg"
+
+    AsyncImage:
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        source: "pictures/Loading-Globe.gif"
+        anim_delay: 1/25
+        a: 0.1
+
+    FloatLayout:
+
+        InitComponents:
+            x: 310
+            y: 100
+            text: "MainController started...\n"
+            isOnline: app.mainControllerConnected
+
+        InitComponents:
+            x: 310
+            y: 75
+            text: "FilmMoveController started...\n"
+            isOnline: app.filmMoveControllerConnected
+
+        InitComponents:
+            x: 310
+            y: 50
+            text: "VisionSensor started...\n"
+            isOnline: app.visionSensorConnected
+
+        InitComponents:
+            x: 310
+            y: 25
+            text: "EthernetSwitch started...\n"
+            isOnline: app.switchConnected

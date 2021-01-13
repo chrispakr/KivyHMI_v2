@@ -1,0 +1,586 @@
+#:import utils kivy.utils
+#:import getHexCol kivy.utils.get_color_from_hex
+
+<restartPopup>:
+    Label:
+        text: "do you want to reboot the HMI?"
+        size_hint: 0.6, 0.2
+        pos_hint: {"x":0.2, "top":0.8}
+    BoxLayout:
+        orientation: "horizontal"
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        Button:
+            text: 'OK, reboot...'
+            size_hint: 1, 0.4
+            on_press: app.rebootHmi()
+
+<NavButton@Button>:
+    alpha: 1.0
+    background_color: (0,0,0,0)
+    font_name: "StdFont"
+    font_size: 16
+    #color: getHexCol("#858585")
+    color: 0.5,0.5,0.5,self.alpha
+    canvas.before:
+        Color:
+            rgb: getHexCol("#858585")
+            a: self.alpha
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 4, 50
+        Color:
+            rgb: (getHexCol("#151515") if self.state == "normal" else getHexCol("#3b3b3b"))
+            a: self.alpha
+        RoundedRectangle:
+            pos: self.x + 1, self.y +1 
+            size: self.width -2, self.height -2
+            radius: [3]
+        
+
+<VisButton@ToggleButton>:
+    alpha: 0.7
+    size_hint: [None, None]
+    background_color: (0,0,0,0)
+    font_name: "StdFont"
+    font_size: 16
+    color: getHexCol("#FFFFFF") if self.state == "normal" else getHexCol("#000000")
+    canvas.before:
+        Color:
+            rgb: getHexCol("#858585")
+            a: self.alpha if self.disabled == False else 0.2
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 4, 50
+        Color:
+            rgb: (getHexCol("#151515") if self.state == "normal" else getHexCol("#22f400"))
+            a: self.alpha if self.disabled == False else 0.2
+        RoundedRectangle:
+            pos: self.x + 1, self.y +1
+            size: self.width -2, self.height -2
+            radius: [3]
+
+
+<DhButton@ToggleButton>:
+    arrowAngle: 0
+    size_hint: [None, None]
+    size: [52,52]
+    background_color: 0,0,0,0
+    background_normal: ""
+    background_down: ""
+    canvas.before:
+        Color:
+            rgb: getHexCol("#2f2f2f")
+        RoundedRectangle:
+            pos: root.pos
+            size: 50,50
+            radius: [3]
+        Color:
+            rgb: getHexCol("#858585")
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 4, 50
+
+    Image:
+        source: "pictures/icon_downHolder.png"
+        center_x: self.parent.center_x
+        center_y: self.parent.center_y
+        canvas.before:
+            PushMatrix
+            Rotate:
+                axis: 0,0,1
+                angle: root.arrowAngle
+                origin: self.center
+        canvas.after:
+            PopMatrix
+
+
+<DhButtonBig@ToggleButton>:
+    size_hint: [None, None]
+    size: [800,100]
+    background_color: 0,0,0,0
+    background_normal: ""
+    background_down: ""
+    canvas.before:
+        Color:
+            rgb: getHexCol("#2f2f2f")
+            a: 0.0
+        RoundedRectangle:
+            pos: root.pos
+            size: root.size
+            radius: [3]
+        Color:
+            rgb: getHexCol("#858585")
+            a: 0.0
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 4, 50
+
+
+
+<Spool@RelativeLayout>:
+    filmDiameter: 100
+    size_hint: None, None
+    width: 136
+    height: 136
+    canvas:
+        Color:
+            rgb: 1,1,1
+        Ellipse:
+            pos: 3,3
+            size: self.width - 6, self.height - 6
+        Color:
+            rgb: getHexCol("#22f400")
+        Line:
+            cap: "none"
+            width: 16
+            circle: (self.width/2, self.height/2, min(self.width -40, self.height -40) / 2, 0, (root.filmDiameter - 55) * 3.6, 50)
+    Image:
+        pos: 0,0
+        source: "pictures/spool.png"
+        size: root.size
+    Label:
+        font_name: "StdFont"
+        font_size: 18
+        color: getHexCol("#c0c0c0")
+        text: str(root.filmDiameter)
+
+
+<FlagTransport@RelativeLayout>:
+    size_hint: None, None
+    width: 239
+    height: 30
+    Image:
+        pos: 0,0
+        source: "pictures/FilmTransport_Flag.png"
+        size: root.size
+
+
+<FlagGeneralStatus@RelativeLayout>:
+    size_hint: None, None
+    width: 233
+    height: 29
+    Image:
+        pos: 0,0
+        source: "pictures/GeneralStatus_Flag.png"
+        size: root.size
+
+
+<LightOnButton@ToggleButton>:
+    size_hint: [None, None]
+    size: [52,52]
+    background_color: (0,0,0,0)
+    canvas.before:
+        Color:
+            rgb: getHexCol("#2f2f2f")
+        RoundedRectangle:
+            pos: root.pos
+            size: 50, 50
+            radius: [3,]
+        Color:
+            rgb: getHexCol("#858585")
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 4, 50
+    Image:
+        id: imgLightOff
+        color: (1,1,1,1)
+        source: "pictures/icon_light_off.png"
+        center_x: self.parent.center_x
+        center_y: self.parent.center_y
+    Image:
+        id: imgLightOn
+        color: (1,1,1,1 if root.state == "down" else 0)
+        source: "pictures/icon_light_on.png"
+        center_x: self.parent.center_x
+        center_y: self.parent.center_y
+
+
+<LedColorButton@Button>:
+    btnText: "-"
+    btnColor: "#ffffff"
+    size_hint: [None, None]
+    size: [52,52]
+    background_color: (0,1,0,0)
+    canvas.before:
+        Color:
+            rgb: getHexCol(root.btnColor)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [4,]
+        Color:
+            rgb: getHexCol("#858585")
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 4, 50
+    Label:
+        center_x: self.parent.center_x
+        center_y: self.parent.center_y -2
+        font_name: "StdFont"
+        font_size: 30
+        color: getHexCol("#000000")
+        text: root.btnText
+
+
+
+<SelectColorButton@Button>:
+    btnText: "W"
+    btnColor: "#ffffff"
+    selected: False
+    size_hint: [None, None]
+    size: [50,34]
+    background_color: (0,1,0,0)
+    canvas.before:
+        Color:
+            rgb: getHexCol(root.btnColor) if root.selected == True else getHexCol("#202020")
+            a: 0.4
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [4]
+        Color:
+            rgb: getHexCol(root.btnColor) if root.selected == True else getHexCol("#ffffff")
+            a: 1.0
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 4, 50
+    Label:
+        center_x: self.parent.center_x
+        center_y: self.parent.center_y -2
+        font_name: "StdFont"
+        font_size: 20
+        text: root.btnText
+        color: getHexCol(root.btnColor)
+
+
+<SelectColorMenu@RelativeLayout>:
+    isVisible: False
+    opacity: 0.3
+    size_hint: None, None
+    selectedColor: ""
+    width: 252
+    height: 50
+    canvas.before:
+        Color:
+            rgb: getHexCol("#202020")
+        RoundedRectangle:
+            pos: 0,0
+            size: self.size
+            radius: [5]
+        Color:
+            rgb: getHexCol("#858585")
+        Line:
+            width: 1.05
+            rounded_rectangle: 0, 0, self.width, self.height, 5, 50
+    GridLayout:
+        cols: 4
+        spacing: 10
+        padding: [11,8,11,8]
+        SelectColorButton:
+            btnText: "W"
+            btnColor: "#ffffff"
+            disabled: True if root.isVisible == True else False
+            selected: True if root.selectedColor == "W" else False
+            on_press: root.pressLedButtonWhite(self)
+        SelectColorButton:
+            btnText: "R"
+            btnColor: "#ff0000"
+            disabled: True if root.isVisible == True else False
+            selected: True if root.selectedColor == "R" else False
+            on_press: root.pressLedButtonRed(self)
+        SelectColorButton:
+            btnText: "G"
+            btnColor: "#22f400"
+            disabled: True if root.isVisible == True else False
+            selected: True if root.selectedColor == "G" else False
+            on_press: root.pressLedButtonGreen(self)
+        SelectColorButton:
+            btnText: "B"
+            btnColor: "#0000ff"
+            disabled: True if root.isVisible == True else False
+            selected: True if root.selectedColor == "B" else False
+            on_press: root.pressLedButtonBlue(self)
+
+
+
+<FilmShape@RelativeLayout>:
+    size_hint: None, None
+    tFilmDiameter: 0
+    width: 450
+    height: 75
+    canvas:
+        Color:
+            rgb: 0,0,0,1
+        Line:
+            width: 4
+            points: [0,0,135,75,315,75,450,0]
+            dash_length: 5
+            dash_offset: 5
+
+
+<DownHolder@RelativeLayout>:
+    setDhPosition: 0
+    size_hint: None, None
+    width: 182
+    height: 30
+    canvas.before:
+        Color:
+            rgb: getHexCol("#6b6b6b")
+        Line:
+            width: 1
+            rounded_rectangle: 0, 0, self.width, 12, 4, 100
+        Line:
+            width: 1
+            rounded_rectangle: 0, 18, self.width, 12, 4, 100
+
+    canvas:
+        Color:
+            rgb: getHexCol("#c0c0c0")
+        RoundedRectangle:
+            pos: 0, self.setDhPosition
+            size: 182, 12
+            radius: [4]
+
+
+
+<ScreenManualControl>:
+    w_dhStatus: dhStatus
+    w_dhButton: dhButton
+    w_MenuSelectLedColor: menuSelectLedColor
+    on_enter: app.curScreenName = "MANUAL MACHINE CONTROL"
+    
+    #Image:
+    #    source: "pictures/ManualControlView.png"
+
+    FlagTransport:
+        x: 8
+        y: 135
+
+    FlagGeneralStatus:
+        x: 8
+        y: 397
+
+    FilmShape:
+        center_x: 400
+        y: 255
+
+    Spool:
+        id: rearSpool
+        filmDiameter: app.spoolDiameterRear
+        center_x: 175
+        center_y: 255
+    Spool:
+        id: frontSpool
+        filmDiameter: app.spoolDiameterFront
+        center_x: 625
+        center_y: 255
+
+    DownHolder:
+        id: dhStatus
+        center_x: 400
+        y: 348
+
+    DhButton:
+        id: dhButton
+        state: app.btnDhState
+        x: 242
+        y: 335
+        on_state: root.dhAnimationToggle(self)
+        on_press: root.setDhPositionToggle(self)
+
+
+    DhButtonBig:
+        x: 0
+        y: 335
+        on_press: root.setDhPositionToggle(self)
+
+
+    GridLayout:
+        id: btnFilmType
+        padding: [0,0,0,0]
+        spacing: 8
+        pos: 582,-58
+        size_hint_x: None
+        width: 150
+        cols: 2
+        VisButton:
+            text: "NEG"
+            size: 100, 40
+            disabled: app.visionSensorConnected == False
+            group: "filmtype"
+            state: "down" if app.visionSensor_LoadedPreset == 0 else "normal"
+            #alpha: app.alpha_btnFilmMoveBackward
+            #disabled: app.disable_btnFilmMoveBackward
+            on_state: root.enableSettings_Negative(self)
+        VisButton:
+            text: "POS"
+            size: 100, 40
+            disabled: app.visionSensorConnected == False
+            group: "filmtype"
+            state: "down" if app.visionSensor_LoadedPreset == 1 else "normal"
+            #alpha: app.alpha_btnFilmMoveBackward
+            #disabled: app.disable_btnFilmMoveBackward
+            on_press: root.enableSettings_Positive(self)
+
+    RelativeLayout:
+        id: menuSelectLedColor
+        center_x: root.width/2
+        y: 237
+        isVisible: False
+        opacity: 0.0
+        size_hint: None, None
+        selectedColor: 0
+        width: 252
+        height: 50
+        canvas.before:
+            Color:
+                rgb: getHexCol("#202020")
+            RoundedRectangle:
+                pos: 0,0
+                size: self.size
+                radius: [5]
+            Color:
+                rgb: getHexCol("#858585")
+            Line:
+                width: 1.05
+                rounded_rectangle: 0, 0, self.width, self.height, 5, 50
+        GridLayout:
+            cols: 4
+            spacing: 10
+            padding: [11,8,11,8]
+            SelectColorButton:
+                btnText: "W"
+                btnColor: "#ffffff"
+                disabled: False if menuSelectLedColor.isVisible == True else True
+                selected: True if app.curLedColor == 1 else False
+                on_press: root.pressLedButtonWhite(self)
+            SelectColorButton:
+                btnText: "R"
+                btnColor: "#ff0000"
+                disabled: False if menuSelectLedColor.isVisible == True else True
+                selected: True if app.curLedColor == 2 else False
+                on_press: root.pressLedButtonRed(self)
+            SelectColorButton:
+                btnText: "G"
+                btnColor: "#22f400"
+                disabled: False if menuSelectLedColor.isVisible == True else True
+                selected: True if app.curLedColor == 3 else False
+                on_press: root.pressLedButtonGreen(self)
+            SelectColorButton:
+                btnText: "B"
+                btnColor: "#0000ff"
+                disabled: False if menuSelectLedColor.isVisible == True else True
+                selected: True if app.curLedColor == 4 else False
+                on_press: root.pressLedButtonBlue(self)
+
+    LightOnButton:
+        id: lightOnOffButton
+        state: app.btnLightOnState
+        center_x: 360
+        y: 237
+        on_press: root.switchLightToggle(self)
+
+    LedColorButton:
+        btnColor: "#ffffff" if app.curLedColor == 0 else "#ffffff" if app.curLedColor == 1 else "#ff0000" if app.curLedColor == 2 else "#22f400" if app.curLedColor == 3 else "#0000ff" if app.curLedColor == 4 else "#ffffff"
+        btnText: "-" if app.curLedColor == 0 else "W" if app.curLedColor == 1 else "R" if app.curLedColor == 2 else "G" if app.curLedColor == 3 else "B" if app.curLedColor == 4 else "-"
+        center_x: 440
+        y: 237
+        on_press: root.switchShowMenuSelectLedColor(self)
+    
+
+    GridLayout:
+        pos: 0, 78
+        padding: [8,0,8,0]
+        spacing: 16
+        size_hint_y: None
+        height: 50
+        cols: 3
+        GridLayout:
+            id: btnMoveFilmBackward
+            padding: [0,0,0,0]
+            spacing: 16
+            size_hint_x: None
+            width: 284
+            #height: 52
+            cols: 3
+            NavButton:
+                text: "<<<"
+                font_size: 25
+                #alpha: app.alpha_btnFilmMoveBackward
+                disabled: app.disable_btnFilmMoveBackward
+                on_press: app.sendMoveCommand(36)
+            NavButton:
+                text: "<<"
+                font_size: 25
+                #alpha: app.alpha_btnFilmMoveBackward
+                disabled: app.disable_btnFilmMoveBackward
+                on_press: app.sendMoveCommand(34)
+            NavButton:
+                text: "<"
+                font_size: 25
+                #alpha: app.alpha_btnFilmMoveBackward
+                disabled: app.disable_btnFilmMoveBackward
+                on_press: app.sendMoveCommand(32)
+        
+        GridLayout:
+            padding: [0,0,0,0]
+            spacing: 16
+            cols: 1
+            NavButton:
+                text: "STOP"
+                on_press: app.sendMoveCommand(0)
+
+        GridLayout:
+            id: btnMoveFilmForward
+            padding: [0,0,0,0]
+            spacing: 16
+            size_hint_x: None
+            width: 284
+            #height: 52
+            cols: 3
+            NavButton:
+                id: btnFwSlow
+                text: ">"
+                font_size: 25
+                disabled: app.disable_btnFilmMoveForward
+                on_press: app.sendMoveCommand(31)
+            NavButton:
+                id: btnFwMid
+                text: ">>"
+                font_size: 25
+                disabled: app.disable_btnFilmMoveForward
+                on_press: app.sendMoveCommand(33)
+            NavButton:
+                id: btnFwFast
+                text: ">>>"
+                font_size: 25
+                disabled: app.disable_btnFilmMoveForward
+                on_press: app.sendMoveCommand(35)
+
+    GridLayout:
+        id: btnFilmLoad
+        #disabled: app.disable_btnFilmControl
+        pos: 0,8
+        padding: [8,0,8,0]
+        spacing: 16
+        size_hint_y: None
+        height: 60
+        cols: 4
+        NavButton:
+            text: "PREV PICTURE"
+            disabled: app.disable_btnFilmControl
+            on_press: app.sendMoveCommand(20)
+        NavButton:
+            text: "LOAD FILM"
+            disabled: app.disable_btnFilmControl
+            on_press: 
+                app.sendMoveCommand(50)
+                app.screenForward("screenLoadFilm")
+        NavButton:
+            text: "INIT FILM"
+            disabled: app.disable_btnFilmControl
+            on_press: app.screenForward("screenInitFilm")
+        NavButton:
+            text: "NEXT PICTURE"
+            disabled: app.disable_btnFilmControl
+            on_press: app.sendMoveCommand(10)

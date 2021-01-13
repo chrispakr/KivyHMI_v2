@@ -1,0 +1,112 @@
+#:import utils kivy.utils
+#:import getHexCol kivy.utils.get_color_from_hex
+#:import ew kivy.uix.effectwidget
+#:include Screen_ManualControl.kv
+#:include Screen_SelectInitMethod.kv
+#:include Screen_LoadFilm.kv
+#:include Screen_InitFilm.kv
+#:include Screen_HomeScreen.kv
+
+
+<StatusLed@RelativeLayout>:
+    connStatus: 0
+    size_hint: None, None
+    width: 18
+    height: 10
+    canvas:
+        Color:
+            rgb: utils.get_color_from_hex("#ff0000") if self.connStatus == 0 else utils.get_color_from_hex("#ff9000") if self.connStatus == 1 else utils.get_color_from_hex("#22f400") if self.connStatus == 3 else utils.get_color_from_hex("#22f400")
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [3]
+
+
+<ToolBar@RelativeLayout>:
+    connStatus: 0
+    orientation: 'lr-tb'
+    size_hint_y: None
+    height: 46
+    onColorRed: utils.get_color_from_hex("#ff0000")
+    onColorOrange: utils.get_color_from_hex("#ff9000")
+    onColorGreen: utils.get_color_from_hex("#22f400")
+    canvas.before:
+        Color:
+            rgb: utils.get_color_from_hex("#151515")
+        Rectangle:
+            pos: 0,0
+            size: self.size
+        Color:
+            rgb: utils.get_color_from_hex("#858585")
+        Rectangle:
+            size: 800, 1
+            pos: 0, 0
+        Rectangle:
+            size: 1, 46
+            pos: 640, 0
+
+
+<ToolButton@Button>:
+    size_hint: None, None
+    background_color: (0,1,0,0)
+    color: utils.get_color_from_hex("#151515")
+    align: 'center'
+    text: '<'
+    font_size: 30
+    canvas.before:
+        Color:
+            rgb: utils.get_color_from_hex("#858585")
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+
+<OwnLabel@Label>:
+    size_hint_x: None
+    font_name: "StdFont"
+    font_size: 16
+    color: utils.get_color_from_hex("#858585")
+
+<BaseScreen>:
+    rows: 2
+    cols: 1
+    size_hint: 1, 1
+
+    ToolBar:
+        pos: -50 ,-50
+        connStatus: app.connStatus
+        ToolButton:
+            width: 48
+            height: 46
+            on_press: app.screenBackward("screenHome")
+
+        Label:
+            size_hint: None, None
+            text_size: self.size
+            size: 300, 30
+            x: 60
+            y: 8
+            color: utils.get_color_from_hex("#858585")
+            font_size: 18
+            halign: 'left'
+            valign:'middle'
+            font_name: "StdFont"
+            text: app.curScreenName
+
+        Label:
+            size_hint_x: None
+            font_name: "StdFont"
+            font_size: 16
+            color: utils.get_color_from_hex("#858585")
+            x: 655
+            y: 0
+            text: "CONNECTED"
+        
+        StatusLed:
+            x: 383
+            y: 9
+            connStatus: app.connStatus
+
+    ScreenSwitcher:
+        id: screenSwitcher #Put an ID to your ScreenManager class
+        current: "screenHome"
