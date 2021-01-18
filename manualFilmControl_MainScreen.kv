@@ -1,0 +1,66 @@
+
+<FilmTransportControl>:
+    GridLayout:
+        rows: 5
+        cols: 1
+        minimum_height: 40
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: 40
+            Image:
+                size: 706, 40
+                keep_ratio: True
+                width: root.width
+                source: "pictures/header/header_filmControl.png"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,10,10,10
+            size_hint_y: None
+            height: 85
+            IconButtonToggle:
+                imageSource: "pictures/icon_light.png"
+                on_press: app.toggleLight(self)
+                state: "down" if app.curLedColor > 0 else "normal"
+            IconButtonToggle:
+                imageSource: "pictures/icon_selectColor.png"
+                on_press: app.toggleLedColor(self)
+            DhButton:
+                imageSource: "pictures/baseline_expand_more_white_48pt_3x.png"
+                arrowAngle: app.btnDhArrowAngle
+                on_press: app.toggleDownHolder()
+            IconButton:
+                imageSource: "pictures/baseline_pan_tool_white_48pt_3x.png"
+            IconButton:
+                imageSource: "pictures/icon_epo.png"
+                on_press: app.visionSensorLoadJob()
+
+        SmFilmMoveCenter:
+            id: smFilmTransportCenterID
+            size_hint_y: None
+            height: 210
+            current: app.curFilmTransportCenterScreen
+
+        SmFilmMoveBottom:
+            id: smFilmMoveBottomID
+            size_hint_y: None
+            height: 145
+            current: app.curFilmTransportBottomScreen
+
+
+<CameraControl>:
+    BoxLayout:
+        Label:
+            text: "Page CameraControl"
+
+<ProjectControl>:
+    BoxLayout:
+        Label:
+            text: "Page ProjectControl"
+
+<ScreenSettings>:
+    BoxLayout:
+        Label:
+            text: "Page Settings"

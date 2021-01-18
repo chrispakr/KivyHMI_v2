@@ -1,11 +1,13 @@
 #:import utils kivy.utils
 #:import getHexCol kivy.utils.get_color_from_hex
-#:include Screen_ManualControl.kv
-#:include Screen_SelectInitMethod.kv
-#:include Screen_LoadFilm.kv
-#:include Screen_InitFilm.kv
-#:include Screen_HomeScreen.kv
 #:include Screen_initHmi.kv
+#:include Screen_HomeScreen.kv
+#:include ownComponents.kv
+#:include manualFilmControl_MainScreen.kv
+#:include manualFilmControl_SubScreens_Bottom.kv
+#:include manualFilmControl_SubScreens_Center.kv
+
+
 
 #BaseScreenManager:
 #    id: baseScreenManagerID

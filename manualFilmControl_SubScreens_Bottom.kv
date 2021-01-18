@@ -1,0 +1,172 @@
+<ScreenButtonsFilmIsInsert>:
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,10,10,5
+            size_hint_y: None
+            height: 65
+            MoveFilmButton:
+                imageSource: "pictures/icons/navigate_prev_24px_3x.png"
+                disabled: app.disable_btnFilmMoveBackward
+                on_press: app.sendMoveCommand(36)
+            MoveFilmButton:
+                imageSource: "pictures/icons/navigate_prev_24px_2x.png"
+                disabled: app.disable_btnFilmMoveBackward
+                on_press: app.sendMoveCommand(34)
+            MoveFilmButton:
+                imageSource: "pictures/icons/navigate_prev_24px_1x.png"
+                disabled: app.disable_btnFilmMoveBackward
+                on_press: app.sendMoveCommand(32)
+            StopButton:
+                text: "STOP"
+                disabled: app.disable_btnStop
+                on_press: app.sendMoveCommand(0)
+            MoveFilmButton:
+                imageSource: "pictures/icons/navigate_next_24px_1x.png"
+                disabled: app.disable_btnFilmMoveForward
+                on_press: app.sendMoveCommand(31)
+            MoveFilmButton:
+                imageSource: "pictures/icons/navigate_next_24px_2x.png"
+                disabled: app.disable_btnFilmMoveForward
+                on_press: app.sendMoveCommand(33)
+            MoveFilmButton:
+                imageSource: "pictures/icons/navigate_next_24px_3x.png"
+                disabled: app.disable_btnFilmMoveForward
+                on_press: app.sendMoveCommand(35)
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,5,10,10
+            size_hint_y: None
+            height: 80
+            NextPicButton:
+                imageSource: "pictures/baseline_first_page_white_48pt_3x.png"
+                disabled: app.disable_btnFilmControl
+                on_press: app.sendMoveCommand(20)
+            SelectFilmButton:
+                id: selectCameraTypeButton
+                #on_press: app.selectCameraTypeScreenToggle(self)
+                on_press: app.selectCameraTypeScreenToggle(True)
+
+            NextPicButton:
+                imageSource: "pictures/baseline_last_page_white_18pt_3x.png"
+                disabled: app.disable_btnFilmControl
+                on_press: app.sendMoveCommand(10)
+
+
+<ScreenButtonsNoFilmInsert>:
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10
+            padding: 10,10,10,5
+            size_hint_y: None
+            height: 65
+            InfoTextLabel:
+                text: "No Film Insert - Please Load Film..."
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,5,10,10
+            size_hint_y: None
+            height: 80
+            StartFilmLoadButton:
+                on_press: app.startFilmLoad()
+
+
+<ScreenButtonsLoadFilm>:
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10
+            padding: 10,10,10,5
+            size_hint_y: None
+            height: 65
+            InfoTextLabel:
+                text: "LOADING FILM..."
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,5,10,10
+            size_hint_y: None
+            height: 80
+            FilmLoadButton:
+                btnText: "< CANCEL"
+                on_press: app.stopFilmLoad()
+            LoadFilmFfwButton:
+                on_press: app.enable_filmLoadFastForward()
+                on_release: app.disable_filmLoadFastForward()
+            FilmLoadButton:
+                btnText: "INIT FILM >"
+                on_press: app.startFilmInit()
+
+
+<ScreenInitFilm>:
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10
+            padding: 10,10,10,5
+            size_hint_y: None
+            height: 65
+            InfoTextLabel:
+                text: "INIT FILM... - PLEASE WAIT..."
+
+#        BoxLayout:
+#            orientation: "horizontal"
+#            spacing: 10
+#            padding: 10,5,10,10
+#            size_hint_y: None
+#            height: 80
+#            FilmLoadButton:
+#                btnText: "< CANCEL"
+#                on_press: app.stopFilmLoad()
+#            LoadFilmFfwButton:
+#                on_press: app.enable_filmLoadFastForward()
+#                on_release: app.disable_filmLoadFastForward()
+#            FilmLoadButton:
+#                btnText: "INIT FILM >"
+#                on_press: app.startFilmInit()
+
+
+<ScreenButtonsSelectCameraType>:
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10
+            padding: 10,10,10,5
+            size_hint_y: None
+            height: 65
+            InfoTextLabel:
+                text: "PLEASE SELECT CAMERA/FILM TYPE..."
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,5,10,10
+            size_hint_y: None
+            height: 80
+            FilmLoadButton:
+                btnText: "< CANCEL"
+                on_press: app.selectCameraTypeScreenToggle(False)
+            Label:
+            FilmLoadButton:
+                btnText: "CONFIRM >"
+                #on_press: app.startFilmInit()

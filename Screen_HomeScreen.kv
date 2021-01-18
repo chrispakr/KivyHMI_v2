@@ -1,43 +1,7 @@
-<restartPopup>:
-    Label:
-        text: "Do you want to reboot the HMI?"
-        size_hint: 0.6, 0.2
-        pos_hint: {"x":0.2, "top":0.8}
-    BoxLayout:
-        orientation: "horizontal"
-        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-        Button:
-            text: 'OK, reboot...'
-            size_hint: 1, 0.4
-            on_press: app.rebootHmi()
-
-<RButton@Button>:
-    alpha: 1.0
-    background_color: (0,0,0,0)
-    size_hint: None, None
-    font_name: "StdFont"
-    font_size: 16
-    #color: getHexCol("#858585")
-    color: 0.5,0.5,0.5,self.alpha
-    canvas.before:
-        Color:
-            rgb: getHexCol("#858585")
-            a: self.alpha
-        Line:
-            width: 1.05
-            rounded_rectangle: self.x, self.y, self.width, self.height, 4, 50
-        Color:
-            rgb: (getHexCol("#151515") if self.state == "normal" else getHexCol("#3b3b3b"))
-            a: self.alpha
-        RoundedRectangle:
-            pos: self.x + 1, self.y +1
-            size: self.width -2, self.height -2
-            radius: [3]
-
 <MainMenuButton@ToggleButton>:
     size_hint: None,None
     imageSource: None
-    size: [110, 120]
+    size: [86, 120]
     background_normal: ""
     background_down: ""
     background_color: app.baseGrey
@@ -59,7 +23,7 @@
         center_y: self.parent.center_y
         source: root.imageSource
         color: app.baseWhite if root.state == "normal" else app.baseColor
-        size: 60, 60
+        size: 50, 50
 
 <MainMenuBox@RelativeLayout>:
     rectPos: app.mainMenuRectPosition
@@ -78,7 +42,7 @@
         BoxLayout:
             orientation: 'horizontal'
             size_hint_x: None
-            width: 118
+            width: 94
             MainMenuBox:
             BoxLayout:
                 orientation: 'vertical'
@@ -88,28 +52,25 @@
                     group: "MainMenu"
                     state: "down"
                     on_press: app.mainMenuControl(0)
-#                        root.ids._smMainMenu_.transition.direction = "up"
-#                        root.ids._smMainMenu_.current = "screenFilmTransport"
+
                 MainMenuButton:
                     id: MmCameras
                     imageSource: "pictures/baseline_linked_camera_white_48pt_3x.png"
                     group: "MainMenu"
                     on_press: app.mainMenuControl(1)
-#                        root.ids._smMainMenu_.transition.direction = "up"
-#                        root.ids._smMainMenu_.current = "screenCameraControl"
 
                 MainMenuButton:
                     id: MmProjects
                     imageSource: "pictures/baseline_subject_white_48pt_3x.png"
                     group: "MainMenu"
                     on_press: app.mainMenuControl(2)
-#                        root.ids._smMainMenu_.transition.direction = "up"
-#                        root.ids._smMainMenu_.current = "screenProjectControl"
+
                 MainMenuButton:
                     id: MmSettings
                     imageSource: "pictures/baseline_miscellaneous_services_white_48pt_3x.png"
                     group: "MainMenu"
-                    on_press: app.testfunc()
+                    on_press: app.mainMenuControl(3)
+
         SmMainScreen:
             id: smMainMenu #Put an ID to your ScreenManager class
             direction: "down"

@@ -1,0 +1,218 @@
+<ScreenFilmAnimation>:
+    FloatLayout:
+        orientation: "vertical"
+        Image:
+            height: 160
+            width: 530
+            y: 0
+            source: app.filmAnimationCurImgSource
+            #anim_delay: -1/25
+            #color: app.baseColor
+        DownHolder:
+            center_x: root.width /2
+            center_y: 178
+
+<ScreenLoadFilmAnimation>:
+    #on_enter: filmLoadAnimation.anim_reset(True)
+    FloatLayout:
+        orientation: "vertical"
+        Image:
+            id: filmLoadAnimation
+            height: 160
+            width: 530
+            y: 0
+            source: "pictures/Film_Loading_Animation.gif"
+            anim_delay: 1/25
+            anim_func: 0
+            #color: app.baseColor
+        DownHolder:
+            center_x: root.width /2
+            center_y: 178
+
+
+<ScreenSelectCameraType>:
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        padding: 0,0,0,0
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,10,10,5
+            TextButton:
+                text: "negative"
+                group: "posNeg"
+                on_press: app.selectedFilmType = 0
+            TextButton:
+                text: "positive"
+                group: "posNeg"
+                on_press: app.selectedFilmType = 1
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,0,10,0
+            TextButton:
+                text: app.cameraTypes[0]
+                group: "cameraType"
+                on_press: app.selectedCameraType = 0
+                state: "down" if app.selectedCameraType == 0 else "normal"
+            TextButton:
+                text: app.cameraTypes[1]
+                group: "cameraType"
+                state: "down" if app.selectedCameraType == 1 else "normal"
+                on_press: app.selectedCameraType = 1
+            TextButton:
+                text: app.cameraTypes[2]
+                group: "cameraType"
+                state: "down" if app.selectedCameraType == 2 else "normal"
+                on_press: app.selectedCameraType = 2
+            TextButton:
+                text: app.cameraTypes[3]
+                group: "cameraType"
+                state: "down" if app.selectedCameraType == 3 else "normal"
+                on_press: app.selectedCameraType = 3
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,0,10,0
+            TextButton:
+                text: app.cameraTypes[4]
+                group: "cameraType"
+                state: "down" if app.selectedCameraType == 4 else "normal"
+                on_press: app.selectedCameraType = 4
+            TextButton:
+                text: app.cameraTypes[5]
+                group: "cameraType"
+                state: "down" if app.selectedCameraType == 5 else "normal"
+                on_press: app.selectedCameraType = 5
+            TextButton:
+                text: app.cameraTypes[6]
+                group: "cameraType"
+                state: "down" if app.selectedCameraType == 6 else "normal"
+                on_press: app.selectedCameraType = 6
+            Label:
+
+<ScreenSelectLedColor>:
+    GridLayout:
+        rows: 3
+        cols: 1
+        #minimum_height: 40
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,10,10,10
+            size_hint_y: None
+            height: 100
+            ToggleButton:
+                background_color: 0,0,0,0
+                background_down: ""
+                background_normal: ""
+                group: "ledColor"
+                state: "down" if app.curLedColor == 1 else "normal"
+                on_press: app.setLedColor(1)
+                canvas.before:
+                    Color:
+                        rgba: app.ledColorWhite
+                        a: 0.5 if self.state == "normal" else 1.0
+                    RoundedRectangle:
+                        pos: self.x, self.y
+                        size: self.width, self.height
+                        radius: [8]
+
+            ToggleButton:
+                background_color: 0,0,0,0
+                background_down: ""
+                background_normal: ""
+                group: "ledColor"
+                on_press: app.setLedColor(2)
+                state: "down" if app.curLedColor == 2 else "normal"
+                canvas.before:
+                    Color:
+                        rgb: app.ledColorRed
+                        a: 0.5 if self.state == "normal" else 1.0
+                    RoundedRectangle:
+                        pos: self.x, self.y
+                        size: self.width, self.height
+                        radius: [8]
+
+            ToggleButton:
+                background_color: 0,0,0,0
+                background_down: ""
+                background_normal: ""
+                group: "ledColor"
+                on_press: app.setLedColor(3)
+                state: "down" if app.curLedColor == 3 else "normal"
+                canvas.before:
+                    Color:
+                        rgb: app.ledColorGreen
+                        a: 0.5 if self.state == "normal" else 1.0
+                    RoundedRectangle:
+                        pos: self.x, self.y
+                        size: self.width, self.height
+                        radius: [8]
+            ToggleButton:
+                background_color: 0,0,0,0
+                background_down: ""
+                background_normal: ""
+                group: "ledColor"
+                on_press: app.setLedColor(4)
+                state: "down" if app.curLedColor == 4 else "normal"
+                canvas.before:
+                    Color:
+                        rgb: app.ledColorBlue
+                        a: 0.5 if self.state == "normal" else 1.0
+                    RoundedRectangle:
+                        pos: self.x, self.y
+                        size: self.width, self.height
+                        radius: [8]
+        GridLayout:
+            rows: 1
+            cols: 3
+            height: 90
+            padding: 10,0,10,0
+            Image:
+                source: "pictures/icon_slider_small.png"
+                size_hint_x: None
+                width: 75
+            Slider:
+                id: sliderLedBrightness
+                width: 500
+                orientation: 'horizontal'
+                min: 0
+                max: 100
+                step: 1
+                on_value: app.setLedBrightness(self.value)
+            Image:
+                source: "pictures/icon_slider_big.png"
+                size_hint_x: None
+                width: 75
+
+        BoxLayout:
+            rows: 1
+            cols: 2
+
+            Label:
+                font_name: "StdFont"
+                font_size: 24
+                markup: True
+                color: app.baseGrey
+                text: "BRIGHTNESS "
+                size_hint_x: None
+                width: 380
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+            Label:
+                font_name: "StdFont"
+                font_size: 24
+                color: app.baseWhite
+                halign: "right"
+                multiline: True
+                text: str(round(sliderLedBrightness.value)) + "%"
+                #text: "%s" % sliderLedBrightness.value + "%"
+                size_hint_x: None
+                width: 70
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+
