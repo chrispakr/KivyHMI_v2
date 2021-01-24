@@ -6,6 +6,8 @@ from kivy.core.window import Window
 from kivy.core.text import LabelBase
 from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty, StringProperty, ColorProperty, ListProperty
 from kivy.animation import Animation
+from kivy.uix.recycleview import RecycleView
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.effectwidget import EffectWidget
@@ -22,7 +24,7 @@ from configparser import ConfigParser
 from enum import Enum
 import sys
 
-import telnetlib
+from telnetlib import Telnet
 import getpass
 
 from opcua import Client
@@ -157,39 +159,101 @@ def write_settings_vsensor_positive():
         client.disconnect()
 
 
-class POP3Telnet(object):
+def load_job_from_id(job_id):
+    t_job_id = str(job_id)
+    tn = Telnet(tn_HOST, 23)
+    # Login to Sensor
+    print("Telnet connected")
+    tn.read_until(b"User: ")
+    tn.write(tn_user.encode('ascii') + b"\r\n")
+    tn.read_until((b"Password: "))
+    tn.write(b"\r\n")
+    tn.read_until(b"User Logged In\r\n")
+    # Login Finished
+    tn.write(b"SJ" + t_job_id.encode('ascii') + b"\r\n")
+    print("set Job: " + t_job_id)
+    call_ok = str(tn.read_until(b"\r\n"), 'utf-8')
+    call_ok = call_ok.replace("\r\n", "")
+    print("callOK: " + call_ok)
+    return call_ok
+    tn.close()
 
-    def __init__(self, host, port):
-        self.tel = telnetlib.Telnet(host, port)
-        self.tel.read_until(b"\r\n")
-        print(self.tel.read_all())
 
-    def close(self):
-        self.tel.close()
+def get_loaded_job_id():
+    cur_jobId = 0
+    tn = Telnet(tn_HOST, 23)
+    # Login to Sensor
+    print("Telnet connected")
+    tn.read_until(b"User: ")
+    tn.write(tn_user.encode('ascii') + b"\r\n")
+    tn.read_until((b"Password: "))
+    tn.write(b"\r\n")
+    tn.read_until(b"User Logged In\r\n")
+    # Login Finished
+    tn.write(b"GJ" + b"\r\n")
+    call_ok = str(tn.read_until(b"\r\n"), 'utf-8')
+    call_ok = call_ok.replace("\r\n", "")
+    print("callOK: " + call_ok)
+    if call_ok == "1":
+        cur_jobId = str(tn.read_until(b"\r\n"), 'utf-8')
+        cur_jobId = cur_jobId.replace("\r\n", "")
+        print("current loaded jobId: " + cur_jobId)
+    else:
+        cur_jobId = 0
+    return call_ok, cur_jobId
+    tn.close()
 
-    def lese_daten(self):
-        return self.tel.read_until(b"\r\n")
 
-    def kommando(self, kom):
-        send = "%s\r\n" % kom
-        self.tel.write(send.encode('utf-8'))
-        return self.lese_daten()
+def read_job_information(job_id):
+    t_job_id = str(job_id)
+    tn = Telnet(tn_HOST, 23)
+    # Login to Sensor
+    print("Telnet connected")
+    tn.read_until(b"User: ")
+    tn.write(tn_user.encode('ascii') + b"\r\n")
+    tn.read_until((b"Password: "))
+    tn.write(b"\r\n")
+    tn.read_until(b"User Logged In\r\n")
+    #Login Finished
+    tn.write(b"RJ" + t_job_id.encode('ascii') + b"\r\n")
+    print("get infos from Job" + t_job_id)
+    call_ok = str(tn.read_until(b"\r\n"), 'utf-8')
+    call_ok = call_ok.replace("\r\n", "")
+    print("callOK: " + call_ok)
+    if call_ok == "1":
+        filename = str(tn.read_until(b"\r\n"), 'utf-8')
+        filename = filename.replace("\r\n", "")
+        filename = filename.replace(".job", "")
+        filename = filename.replace("_", " ")
+        file_data = filename.split("-")
+        print("filename: " + filename)
+        job_size = str(tn.read_until(b"\r\n"), 'utf-8')
+        job_size = job_size.replace("\r\n", "")
+        print("jobSize: " + job_size)
+    else:
+        file_data = ""
+    return call_ok, file_data
+    tn.close()
 
 
-def vision_sensor_load_job(fileName):
-    try:
-        client.connect()
-        var = client.get_node("ns=2;s=LoadJob")
-        dv = ua.DataValue(ua.Variant("01.job"))
-        dv.ServerTimestamp = None
-        dv.SourceTimestamp = None
-        output = var.call_method("ns=2;s=LoadJob", dv)
-        print(output)
-    # except:
-    #     print("Cannot write Data to Visionsensor")
-    finally:
-        client.disconnect()
-
+def set_visionsensor_online_state(value):
+    tValue = str(value)
+    tn = Telnet(tn_HOST, 23)
+    # Login to Sensor
+    print("Telnet connected")
+    tn.read_until(b"User: ")
+    tn.write(tn_user.encode('ascii') + b"\r\n")
+    tn.read_until((b"Password: "))
+    tn.write(b"\r\n")
+    tn.read_until(b"User Logged In\r\n")
+    # Login Finished
+    tn.write(b"SO" + tValue.encode('ascii') + b"\r\n")
+    print("set sensor_state to: " + tValue)
+    call_ok = str(tn.read_until(b"\r\n"), 'utf-8')
+    call_ok = call_ok.replace("\r\n", "")
+    print("callOK: " + call_ok)
+    return call_ok
+    tn.close()
 
 
 def write_settings_vsensor_negative():
@@ -363,11 +427,13 @@ def show_enable_freerun_popup():
     efr_popupWindow = Popup(title="Warning - Please Confirm", content=show, size_hint=(None, None), size=(400, 200))
     efr_popupWindow.open()
 
+
 def show_disable_freerun_popup():
     show = disableFreeRunPopup()
     global efr_popupWindow
     efr_popupWindow = Popup(title="Leave FreeRun-Mode", content=show, size_hint=(None, None), size=(400, 200))
     efr_popupWindow.open()
+
 
 def restart():
     command = "/usr/bin/sudo /sbin/shutdown -r now"
@@ -438,6 +504,7 @@ class CameraControl(Screen):
 class ProjectControl(Screen):
     pass
 
+
 class ScreenSettings(Screen):
     pass
 
@@ -452,6 +519,7 @@ class ScreenFilmAnimation(Screen):
 
 class ScreenLoadFilmAnimation(Screen):
     pass
+
 
 class ScreenSelectLedColor(Screen):
     pass
@@ -473,12 +541,24 @@ class ScreenInitFilm(Screen):
     pass
 
 
-class ScreenSelectCameraType(Screen):
-    pass
-
-
 class ScreenButtonsSelectCameraType(Screen):
     pass
+
+
+class ScreenSelectCameraType(Screen):
+    def __init__(self, **kwargs):
+        super(ScreenSelectCameraType, self).__init__(**kwargs)
+        fillUpItems = 12 - len(BaseApp.vs_presets)
+        for i in BaseApp.vs_presets:
+            self.ids.rvSelectCameraType.data.append({"text": i[1] + "\n" + i[2], "presetId": i[0]})
+        for i in range(fillUpItems):
+            self.ids.rvSelectCameraType.data.append({"text": "", "presetId": 0})
+
+
+class SelectCameraButton(ToggleButton):
+    def on_press(self):
+        print(self.presetId)
+        BaseApp.vs_selected_preset_temp = self.presetId
 
 
 class DhButton(Button):
@@ -739,16 +819,11 @@ class MainMenuBox(RelativeLayout):
         btn_ani.start(self)
 
 
-# initScreenManager = ScreenManager()
-# initScreenManager.add_widget(HomeScreen(name='screenHome'))
-# initScreenManager.add_widget(ScreenInitHmi(name='screenInitHmi'))
-
-
-
-
 class BaseApp(App):
     curDhPosition = BooleanProperty()
     btnDhArrowAngle = NumericProperty()
+    dhButtonText = StringProperty()
+
     connStatus = NumericProperty(1)
     spoolDiameterFront = NumericProperty(0)
     spoolDiameterRear = NumericProperty(0)
@@ -803,16 +878,12 @@ class BaseApp(App):
     curFilmTransportCenterScreen = StringProperty("screenFilmAnimation")
     curFilmTransportBottomScreen = StringProperty("screenButtonsNoFilmInsert")
 
-    selectedCameraType = NumericProperty(0)
-    selectedFilmType = NumericProperty(0)
-
-    cameraTypes = ListProperty(["ZEISS\nRMK A 8.5/23",
-                   "ZEISS\nRMK A 15/23",
-                   "ZEISS\nRMK A TOP 15",
-                   "ZEISS\nRMK A TOP 30",
-                   "LEICA\nRC 10",
-                   "LEICA\nRC 20",
-                   "LEICA\nRC 30"])
+    vs_presets = []
+    vs_selected_preset_temp = 0
+    vs_selected_preset = 0
+    vs_selected_film_type_temp = NumericProperty(0)
+    vs_selected_film_type = 0
+    vs_loaded_film_name = StringProperty("")
 
     def on_selectedCameraType(self, instance, value):
         print("cameraType changed to: " + str(self.selectedCameraType))
@@ -899,7 +970,6 @@ class BaseApp(App):
                 self.disable_btnStop = False
                 self.disable_btnFreeRun = True
 
-
     def on_curMoveCommand(self, instance, value):
         print ("curMoveCommand changed to: " + str(self.curMoveCommand))
 
@@ -967,7 +1037,6 @@ class BaseApp(App):
                 self.mainMenuRectPosition = 0
         self.lastScreenIndex = screenIndex
 
-
     def updateSpoolArc(self, interval):
         if self.spoolDiameterFront > 50:
             self.arcSpoolFront = (self.spoolDiameterFront - 55) * 3.42
@@ -1000,14 +1069,6 @@ class BaseApp(App):
         if self.fmc_State > 0:
             App.get_running_app().root.ids.smBaseScreen.transition.direction = "left"
             App.get_running_app().root.ids.smBaseScreen.current = "screenManualControl"
-
-    def screenForward(self, screen):
-        App.get_running_app().root.ids.smBaseScreen.transition.direction = "left"
-        App.get_running_app().root.ids.smBaseScreen.current = screen
-
-    def screenBackward(self, screen):
-        App.get_running_app().root.ids.smBaseScreen.transition.direction = "right"
-        App.get_running_app().root.ids.smBaseScreen.current = screen
 
     def sendMoveCommand(self, value):
         print("send moveCommand: " + str(value))
@@ -1057,7 +1118,7 @@ class BaseApp(App):
         client_mqtt.publish(sTopic_enableFreeRun, "")
         efr_popupWindow.dismiss()
 
-    def disable_freerun_with_initfilm(self):
+    def disable_freerun_with_init_film(self):
         self.freeRunEnabled = False
         self.btnFreeRunText = "Unlock Motors"
         client_mqtt.publish(sTopic_startFilmInit, "")
@@ -1073,6 +1134,16 @@ class BaseApp(App):
             self.moveDhDown()
         else:
             self.moveDhUp()
+
+    def moveDhUp(self):
+        client_mqtt.publish(sTopic_setDhPosition, "Up")
+        self.curDhPosition = True
+        self.dhButtonText = "LOWER GLASS"
+
+    def moveDhDown(self):
+        client_mqtt.publish(sTopic_setDhPosition, "Down")
+        self.curDhPosition = False
+        self.dhButtonText = "RISE GLASS"
 
     def setLedColor(self, ledColor):
         self.curLedColor = ledColor
@@ -1090,9 +1161,9 @@ class BaseApp(App):
     def on_curFilmSpeed(self, instance, value):
         if self.curFilmSpeed > 0:
             filmAnimationDelay = 1/(self.curFilmSpeed / 100)
-            print("filmAnimationDelay: " + str(filmAnimationDelay))
-            # self.timerUpdateAnimation.cancel()
-            #self.timerUpdateAnimation = Clock.schedule_interval(self.updateAnimation, filmAnimationDelay)
+            # print("filmAnimationDelay: " + str(filmAnimationDelay))
+            # App.get_running_app().timerUpdateAnimation.unsubscribe()
+            # App.get_running_app().timerUpdateAnimation = Clock.schedule_interval(self.updateAnimation, 1/10)
 
     def updateAnimation(self, dt):
         if self.curFilmMoveDirection == 1:
@@ -1107,8 +1178,6 @@ class BaseApp(App):
                 self.filmAnimationCurPicPos = 74
             self.filmAnimationCurImgSource = "pictures/filmAnimation/Film Transport" + str(self.filmAnimationCurPicPos) + ".png"
 
-
-
     def setLedBrightness(self, ledBrightness):
         minBrightness = 500
 
@@ -1120,7 +1189,6 @@ class BaseApp(App):
             client_mqtt.publish(sTopic_setLedBrightnessGreen, str(minBrightness + ledBrightness * 20))
         if self.curLedColor == 4:
             client_mqtt.publish(sTopic_setLedBrightnessBlue, str(minBrightness + ledBrightness * 20))
-
 
     def toggleLight(self, widget):
         if widget.state == "normal":
@@ -1154,22 +1222,6 @@ class BaseApp(App):
             SmFilmMoveBottom.transition = SlideTransition(direction="right")
             self.curFilmTransportBottomScreen = "screenButtonsFilmIsInsert"
 
-    def visionSensorLoadJob(self):
-        vision_sensor_load_job("test")
-
-
-    def moveDhUp(self):
-        client_mqtt.publish(sTopic_setDhPosition, "Up")
-        self.curDhPosition = True
-
-    def moveDhDown(self):
-        client_mqtt.publish(sTopic_setDhPosition, "Down")
-        self.curDhPosition = False
-
-    def testfunc(self):
-        #SmBaseScreen.transition = "left"
-        App.get_running_app().root.ids.baseScreenManagerID.current = "screenInitHmi"
-
     def checkInitHmiFinished(self):
         if App.get_running_app().mainControllerConnected:
             BaseApp.checkMainControllerIsConnected.cancel()
@@ -1186,10 +1238,7 @@ class BaseApp(App):
         if App.get_running_app().mainControllerConnected and App.get_running_app().filmMoveControllerConnected:
             if App.get_running_app().switchConnected and App.get_running_app().visionSensorConnected:
                 App.get_running_app().initHmiDisplayFinished = True
-                App.get_running_app().toolbar_disabled = False
-                #App.get_running_app().root.ids.smBaseScreen.current = "screenHome"
                 print("switchScreen to HomeScreen")
-                # App.get_running_app().root.ids.smBaseScreenID.current = "screenHome"
                 BaseApp.checkInitHmiIsFinished.cancel()
 
     checkVisionSensorIsConnected = Clock.schedule_interval(visionSensorIsConnected, 8)
@@ -1197,11 +1246,45 @@ class BaseApp(App):
     checkFilmMoveControllerIsConnected = Clock.schedule_interval(filmMoveControllerIsConnected, 5)
     checkSwitchIsConnected = Clock.schedule_interval(switchIsConnected, 7)
     checkInitHmiIsFinished = Clock.schedule_interval(checkInitHmiFinished, 3)
+    #timerUpdateAnimation = Clock.schedule_interval(updateAnimation, 1 / 25)
+
+    def vs_get_current_job(self):
+        cur_job_id = get_loaded_job_id()
+        if cur_job_id[0] == "1":
+            self.vs_selected_preset = cur_job_id[1]
+            print("vs current jobId: " + cur_job_id[0])
+            cur_job_data = read_job_information(self.vs_selected_preset)
+            if int(cur_job_id[1]) < 200:
+                self.vs_loaded_film_name = cur_job_data[1][1] + " - " + cur_job_data[1][2] + " / NEG"
+            else:
+                self.vs_loaded_film_name = cur_job_data[1][1] + " - " + cur_job_data[1][2] + " / POS"
+
+    def vs_load_job_list(self):
+        for i in range(0, 50):
+            t_presets = read_job_information(100 + i)
+            if t_presets[0] == "1":
+                print("add Button: " + str(t_presets[1]))
+                self.vs_presets.append(t_presets[1])
+            else:
+                break
+
+    def vs_set_job(self):
+        self.vs_selected_film_type = self.vs_selected_film_type_temp
+        if self.vs_selected_film_type == 0:
+            self.vs_selected_preset = self.vs_selected_preset_temp
+        else:
+            self.vs_selected_preset = self.vs_selected_preset_temp + 100
+        set_visionsensor_online_state(0)
+        load_job_from_id(self.vs_selected_preset)
+        self.vs_get_current_job()
+        set_visionsensor_online_state(1)
 
     def build(self):
-        Clock.schedule_interval(self.updateSpoolArc, 0.2)
-        timerUpdateAnimation = Clock.schedule_interval(self.updateAnimation, 1 / 25)
-        #timerUpdateAnimation = Clock.schedule_interval(self.updateAnimation, self.filmAnimationDelay)
+        #Clock.schedule_interval(self.updateSpoolArc, 0.2)
+        self.vs_load_job_list()
+        self.vs_get_current_job()
+        self.moveDhUp()
+        timerUpdateAnimation = Clock.schedule_interval(self.updateAnimation, 1/25)
         return BaseScreen()
 
 

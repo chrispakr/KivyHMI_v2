@@ -32,65 +32,37 @@
 
 <ScreenSelectCameraType>:
     BoxLayout:
-        orientation: "vertical"
+        orientation: "horizontal"
         spacing: 10
         padding: 0,0,0,0
         BoxLayout:
-            orientation: "horizontal"
+            orientation: "vertical"
             spacing: 10
-            padding: 10,10,10,5
+            size_hint_x: None
+            width: 174
+            padding: 10,0,0,0
             TextButton:
                 text: "negative"
                 group: "posNeg"
-                on_press: app.selectedFilmType = 0
+                on_press: app.vs_selected_film_type_temp = 0
             TextButton:
                 text: "positive"
                 group: "posNeg"
-                on_press: app.selectedFilmType = 1
-        BoxLayout:
-            orientation: "horizontal"
-            spacing: 10
-            padding: 10,0,10,0
-            TextButton:
-                text: app.cameraTypes[0]
-                group: "cameraType"
-                on_press: app.selectedCameraType = 0
-                state: "down" if app.selectedCameraType == 0 else "normal"
-            TextButton:
-                text: app.cameraTypes[1]
-                group: "cameraType"
-                state: "down" if app.selectedCameraType == 1 else "normal"
-                on_press: app.selectedCameraType = 1
-            TextButton:
-                text: app.cameraTypes[2]
-                group: "cameraType"
-                state: "down" if app.selectedCameraType == 2 else "normal"
-                on_press: app.selectedCameraType = 2
-            TextButton:
-                text: app.cameraTypes[3]
-                group: "cameraType"
-                state: "down" if app.selectedCameraType == 3 else "normal"
-                on_press: app.selectedCameraType = 3
-        BoxLayout:
-            orientation: "horizontal"
-            spacing: 10
-            padding: 10,0,10,0
-            TextButton:
-                text: app.cameraTypes[4]
-                group: "cameraType"
-                state: "down" if app.selectedCameraType == 4 else "normal"
-                on_press: app.selectedCameraType = 4
-            TextButton:
-                text: app.cameraTypes[5]
-                group: "cameraType"
-                state: "down" if app.selectedCameraType == 5 else "normal"
-                on_press: app.selectedCameraType = 5
-            TextButton:
-                text: app.cameraTypes[6]
-                group: "cameraType"
-                state: "down" if app.selectedCameraType == 6 else "normal"
-                on_press: app.selectedCameraType = 6
-            Label:
+                on_press: app.vs_selected_film_type_temp = 1
+
+        RecycleView:
+            id: rvSelectCameraType
+            viewclass: 'SelectCameraButton'
+            RecycleGridLayout:
+                #default_size: 90, 55
+                default_size_hint: 1, 1
+                #size_hint_y: None
+                #height: self.minimum_height
+                spacing: 10
+                padding: 0,0,10,0
+                rows: 3
+                cols: 4
+
 
 <ScreenSelectLedColor>:
     GridLayout:

@@ -48,6 +48,7 @@
                 on_press: app.sendMoveCommand(20)
             SelectFilmButton:
                 id: selectCameraTypeButton
+                filmName: app.vs_loaded_film_name
                 #on_press: app.selectCameraTypeScreenToggle(self)
                 on_press: app.selectCameraTypeScreenToggle(True)
 
@@ -169,4 +170,4 @@
             Label:
             FilmLoadButton:
                 btnText: "CONFIRM >"
-                #on_press: app.startFilmInit()
+                on_press: app.vs_set_job()

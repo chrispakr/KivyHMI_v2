@@ -80,6 +80,7 @@
             radius: [8]
     Image:
         source: root.imageSource
+        color: 1,1,1,1.0 if root.disabled == False else 0.3
         size: 50, 50
         center_x: self.parent.center_x
         center_y: self.parent.center_y
@@ -135,7 +136,7 @@
 
 <SelectFilmButton@Button>:
     alpha: 1.0
-    filmName: "Color Neg RMK TOP 15"
+    filmName: ""
     size_hint: None, None
     size: 338, 65
     font_name: "StdFont"
@@ -280,6 +281,7 @@
             radius: [8]
     Image:
         source: root.imageSource
+        color: 1,1,1,1.0 if root.disabled == False else 0.3
         center_x: self.parent.center_x
         center_y: self.parent.center_y
 
@@ -330,6 +332,31 @@
         Line:
             width: 1.05
             rounded_rectangle: self.x, self.y, self.width, self.height, 8, 50
+
+
+<SelectCameraButton@ToggleButton>:
+    presetId: 0
+    group: "sc_btn"
+    size_hint_y: None
+    font_name: "StdFont"
+    font_size: 16
+    halign: "center"
+    background_color: 0,0,0,0
+    canvas.before:
+        Color:
+            rgb: app.baseColor
+            a: 0.0 if self.state == "normal" else 0.3
+        RoundedRectangle:
+            pos: self.x, self.y
+            size: self.width, self.height
+            radius: [8]
+        Color:
+            rgb: app.baseColor
+            a: 1.0
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 8, 50
+
 
 
 <StopButton@Button>:
