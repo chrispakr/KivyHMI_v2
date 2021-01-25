@@ -13,7 +13,7 @@
             center_y: 178
 
 <ScreenLoadFilmAnimation>:
-    #on_enter: filmLoadAnimation.anim_reset(True)
+    on_enter: filmLoadAnimation._coreimage.anim_reset(True)
     FloatLayout:
         orientation: "vertical"
         Image:
@@ -23,8 +23,7 @@
             y: 0
             source: "pictures/Film_Loading_Animation.gif"
             anim_delay: 1/25
-            anim_func: 0
-            #color: app.baseColor
+            keep_data: True
         DownHolder:
             center_x: root.width /2
             center_y: 178
@@ -41,13 +40,15 @@
             size_hint_x: None
             width: 174
             padding: 10,0,0,0
-            TextButton:
+            SelectFilmTypeButton:
                 text: "negative"
                 group: "posNeg"
+                state: "down" if app.vs_selected_film_type == 0 else "normal"
                 on_press: app.vs_selected_film_type_temp = 0
-            TextButton:
+            SelectFilmTypeButton:
                 text: "positive"
                 group: "posNeg"
+                state: "down" if app.vs_selected_film_type == 1 else "normal"
                 on_press: app.vs_selected_film_type_temp = 1
 
         RecycleView:

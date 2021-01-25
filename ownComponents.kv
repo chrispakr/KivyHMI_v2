@@ -244,8 +244,6 @@
 
 
 <InfoTextLabel@Label>:
-    #size_hint: None, None
-    #size: 340, 45
     font_name: "StdFontBold"
     font_size: 18
     text: ""
@@ -258,6 +256,19 @@
             width: 1.05
             rounded_rectangle: self.x, self.y, self.width, self.height, 8, 50
 
+<InfoTextPulseLabel@Label>:
+    border_color:
+    font_name: "StdFontBold"
+    font_size: 18
+    text: ""
+    background_color: 0,0,0,0
+    canvas.before:
+        Color:
+            rgb: self.border_color
+            #a: 1.0 if self.state == "normal" else 0.5
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 8, 50
 
 <MoveFilmButton@Button>:
     alpha: 1.0
@@ -314,6 +325,27 @@
 
 <TextButton@ToggleButton>:
     alpha: 1.0
+    font_name: "StdFont"
+    font_size: 16
+    halign: "center"
+    background_color: 0,0,0,0
+    canvas.before:
+        Color:
+            rgb: app.baseColor
+            a: 0.0 if self.state == "normal" else 0.3
+        RoundedRectangle:
+            pos: self.x, self.y
+            size: self.width, self.height
+            radius: [8]
+        Color:
+            rgb: app.baseColor
+            a: 1.0
+        Line:
+            width: 1.05
+            rounded_rectangle: self.x, self.y, self.width, self.height, 8, 50
+
+
+<SelectFilmTypeButton@ToggleButton>:
     font_name: "StdFont"
     font_size: 16
     halign: "center"

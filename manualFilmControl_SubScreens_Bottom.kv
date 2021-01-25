@@ -94,6 +94,7 @@
             size_hint_y: None
             height: 65
             InfoTextLabel:
+                id: textLabelFilmLoad
                 text: "LOADING FILM..."
 
         BoxLayout:
@@ -124,24 +125,16 @@
             padding: 10,10,10,5
             size_hint_y: None
             height: 65
-            InfoTextLabel:
+            InfoTextPulseLabel:
                 text: "INIT FILM... - PLEASE WAIT..."
 
-#        BoxLayout:
-#            orientation: "horizontal"
-#            spacing: 10
-#            padding: 10,5,10,10
-#            size_hint_y: None
-#            height: 80
-#            FilmLoadButton:
-#                btnText: "< CANCEL"
-#                on_press: app.stopFilmLoad()
-#            LoadFilmFfwButton:
-#                on_press: app.enable_filmLoadFastForward()
-#                on_release: app.disable_filmLoadFastForward()
-#            FilmLoadButton:
-#                btnText: "INIT FILM >"
-#                on_press: app.startFilmInit()
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,5,10,10
+            size_hint_y: None
+            height: 80
+            Label:
 
 
 <ScreenButtonsSelectCameraType>:
@@ -170,4 +163,28 @@
             Label:
             FilmLoadButton:
                 btnText: "CONFIRM >"
-                on_press: app.vs_set_job()
+                on_press: app.vs_show_load_preset_screen()
+
+
+<ScreenSetVisionSensorSettings>:
+    on_enter: app.vs_set_job()
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10
+            padding: 10,10,10,5
+            size_hint_y: None
+            height: 65
+            InfoTextPulseLabel:
+                text: "WRITE SETTINGS TO SENSOR..."
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,5,10,10
+            size_hint_y: None
+            height: 80
+            Label:
