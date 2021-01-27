@@ -304,6 +304,23 @@
             radius: [8]
 
 
+<TextButton01@Button>:
+    alpha: 1.0
+    background_normal: "pictures/buttons/button_stop.png"
+    background_down: "pictures/buttons/button_stop.png"
+    font_name: "StdFont"
+    font_size: 16
+    background_color: app.baseColor if self.disabled == False else app.baseGreyDark
+    canvas.before:
+        Color:
+            rgb: app.baseColor
+            a: 0.0 if self.state == "normal" else 0.3
+        RoundedRectangle:
+            pos: self.x, self.y
+            size: self.width, self.height
+            radius: [8]
+
+
 <selectCameraTypeButton@ToggleButton>:
     alpha: 1.0
     btnText: "fesdf"

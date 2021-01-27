@@ -5,7 +5,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FadeT
 from kivy.core.window import Window
 from kivy.core.text import LabelBase
 from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty, StringProperty, ColorProperty, \
-    ListProperty
+    ListProperty, AliasProperty
 from kivy.animation import Animation
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
@@ -497,13 +497,19 @@ class ScreenSetVisionSensorSettings(Screen):
 
 
 class ScreenSelectCameraType(Screen):
-    def __init__(self, **kwargs):
-        super(ScreenSelectCameraType, self).__init__(**kwargs)
-        fillUpItems = 12 - len(MainApp.vs_presets)
-        for i in MainApp.vs_presets:
-            self.ids.rvSelectCameraType.data.append({"text": i[1] + "\n" + i[2], "presetId": i[0]})
-        for i in range(fillUpItems):
-            self.ids.rvSelectCameraType.data.append({"text": "", "presetId": 0})
+    update = BooleanProperty(False)
+
+    def on_update(self, *kwargs):
+        if self.update:
+            print("Update VS-Preset-List")
+            self.ids.rvSelectCameraType.data = []
+            print(self.ids.rvSelectCameraType.data)
+            fillUpItems = 12 - len(MainApp.vs_presets)
+            for i in MainApp.vs_presets:
+                self.ids.rvSelectCameraType.data.append({"text": i[1] + "\n" + i[2], "presetId": i[0]})
+            for i in range(fillUpItems):
+                self.ids.rvSelectCameraType.data.append({"text": "", "presetId": 0})
+            self.ids.rvSelectCameraType.refresh_from_data()
 
 
 class ScreenEnableFreeRun(Screen):
@@ -760,6 +766,7 @@ class MainApp(App):
     vs_loaded_film_name = StringProperty("")
     vs_load_preset_state = NumericProperty(0)
     vs_is_online = BooleanProperty(False)
+    updateList = BooleanProperty(False)
 
     def on_selectedCameraType(self, instance, value):
         print("cameraType changed to: " + str(self.selectedCameraType))
@@ -1115,6 +1122,7 @@ class MainApp(App):
             client_mqtt.publish(sTopic_setLedBrightnessBlue, str(t_led_color))
 
     def selectCameraTypeScreenToggle(self, show):
+        self.updateList = True
         if show == True:
             print("show screen selectCameraType")
             SmFilmMoveCenter.transition = SlideTransition(direction="left")
@@ -1147,6 +1155,8 @@ class MainApp(App):
                 print("switchScreen to HomeScreen")
                 FullScreenManager.transition = FadeTransition()
                 App.get_running_app().curFullScreen = "fullScreenHmiMenu"
+                App.get_running_app().vs_load_job_list()
+                vs_read_current_job_information()
                 MainApp.checkInitHmiIsFinished.cancel()
 
     checkVisionSensorIsConnected = Clock.schedule_interval(visionSensorIsConnected, 8)
@@ -1155,11 +1165,18 @@ class MainApp(App):
     checkSwitchIsConnected = Clock.schedule_interval(switchIsConnected, 7)
     checkInitHmiIsFinished = Clock.schedule_interval(checkInitHmiFinished, 3)
 
+    def update_preset_list(self):
+        self.updateList = False
+        self.vs_load_job_list()
+        print(self.updateList)
+        self.updateList = True
+
     def vs_load_job_list(self):
+        self.vs_presets.clear()
         for i in range(0, 50):
             t_presets = read_job_information(100 + i)
             if t_presets[0] == "1":
-                print("add Button: " + str(t_presets[1]))
+                print("add Job to List: " + str(t_presets[1]))
                 self.vs_presets.append(t_presets[1])
             else:
                 break
@@ -1188,8 +1205,6 @@ class MainApp(App):
 
     def build(self):
         # Clock.schedule_interval(self.updateSpoolArc, 0.2)
-        self.vs_load_job_list()
-        vs_read_current_job_information()
         self.moveDhUp()
         timerUpdateAnimation = Clock.schedule_interval(self.updateFilmMoveAnimation, 1 / 25)
         timerUpdateFilmLoadAnimation = Clock.schedule_interval(self.updateFilmLoadAnimation, 1 / 25)

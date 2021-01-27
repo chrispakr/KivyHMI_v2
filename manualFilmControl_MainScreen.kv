@@ -65,5 +65,25 @@
 
 <ScreenSettings>:
     BoxLayout:
-        Label:
-            text: "Page Settings"
+        orientation: "vertical"
+        Image:
+            size: 706, 40
+            keep_ratio: True
+            width: root.width
+            source: "pictures/header/header_settings.png"
+        BoxLayout:
+            size_hint_y: None
+            height: 440
+            BoxLayout:
+                padding: 10,10,10,10
+                spacing: 10
+                size_hint_y: None
+                height: 80
+                orientation: "horizontal"
+                TextButton01:
+                    text: "Reboot HMI"
+                    on_press: app.reboot_hmi()
+                TextButton01:
+                    text: "Update VS-Presets"
+                    on_press: app.update_preset_list()
+#                    on_release: app.updateList = False
