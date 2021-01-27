@@ -5,7 +5,7 @@
     height: 10
     canvas:
         Color:
-            rgb: utils.get_color_from_hex("#ff0000") if self.isOnline == False else utils.get_color_from_hex("#22f400") if self.isOnline == True else utils.get_color_from_hex("#22f400")
+            rgb: app.baseGreyLight if self.isOnline == False else app.baseColor
         RoundedRectangle:
             pos: self.pos
             size: self.size
@@ -41,17 +41,19 @@
 
 
 
-<ScreenInitHmi>:
+<FullScreenInitHmi>:
     on_enter: app.curScreenName = "InitHmi"
 
+#    Image:
+#        source: "pictures/BootScreen.jpg"
     Image:
-        source: "pictures/BootScreen.jpg"
-
-    AsyncImage:
         pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-        source: "pictures/Loading-Globe.gif"
-        anim_delay: 1/25
-        a: 0.1
+        source: app.initHmiAnimationBottomImgSource
+
+    Image:
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        source: app.initHmiAnimationTopImgSource
+        color: app.baseColor
 
     FloatLayout:
 

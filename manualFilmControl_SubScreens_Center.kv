@@ -5,25 +5,34 @@
             height: 160
             width: 530
             y: 0
-            source: app.filmAnimationCurImgSource
-            #anim_delay: -1/25
-            #color: app.baseColor
+            source: app.filmMoveAnimationBottomImgSource
+        Image:
+            height: 160
+            width: 530
+            y: 0
+            source: app.filmMoveAnimationTopImgSource
+            color: app.baseGreyLight
         DownHolder:
             center_x: root.width /2
             center_y: 178
 
 <ScreenLoadFilmAnimation>:
-    on_enter: filmLoadAnimation._coreimage.anim_reset(True)
+    #on_enter: app.filmLoadAnimationPicPos = 0
     FloatLayout:
         orientation: "vertical"
         Image:
-            id: filmLoadAnimation
             height: 160
             width: 530
             y: 0
-            source: "pictures/Film_Loading_Animation.gif"
-            anim_delay: 1/25
-            keep_data: True
+            source: app.filmLoadAnimationBottomImgSource
+            allow_stretch: False
+        Image:
+            height: 160
+            width: 530
+            y: 0
+            source: app.filmLoadAnimationTopImgSource
+            allow_stretch: False
+            color: app.baseGreyLight
         DownHolder:
             center_x: root.width /2
             center_y: 178
@@ -144,20 +153,23 @@
             height: 90
             padding: 10,0,10,0
             Image:
-                source: "pictures/icon_slider_small.png"
+                source: "pictures/icons/icon_slideSmall.png"
                 size_hint_x: None
                 width: 75
             Slider:
                 id: sliderLedBrightness
                 width: 500
                 orientation: 'horizontal'
+                color: app.baseColor
                 min: 0
                 max: 100
                 step: 1
+                value: app.set_ledBrightnessSlider
                 on_value: app.setLedBrightness(self.value)
             Image:
-                source: "pictures/icon_slider_big.png"
+                source: "pictures/icons/icon_sliderBig.png"
                 size_hint_x: None
+                allow_stretch: False
                 width: 75
 
         BoxLayout:
@@ -168,7 +180,7 @@
                 font_name: "StdFont"
                 font_size: 24
                 markup: True
-                color: app.baseGrey
+                color: app.baseGreyDark
                 text: "BRIGHTNESS "
                 size_hint_x: None
                 width: 380
@@ -188,4 +200,5 @@
                 text_size: self.size
                 halign: 'right'
                 valign: 'middle'
+
 

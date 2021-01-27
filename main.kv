@@ -1,0 +1,23 @@
+#:import utils kivy.utils
+#:import getHexCol kivy.utils.get_color_from_hex
+#:include Screen_initHmi.kv
+#:include Screen_HomeScreen.kv
+#:include ownComponents.kv
+#:include manualFilmControl_MainScreen.kv
+#:include manualFilmControl_SubScreens_Bottom.kv
+#:include manualFilmControl_SubScreens_Center.kv
+
+
+
+#BaseScreenManager:
+#    id: baseScreenManagerID
+#    ScreenInitHmi:
+#        name: "screenInitHmi"
+#    BaseScreen:
+#        name: "screenBase"
+
+<BaseScreen>:
+    FullScreenManager:
+        id: smFullScreenID #Put an ID to your ScreenManager class
+        current: app.curFullScreen
+#        current: "screenInitHmi"

@@ -96,9 +96,11 @@ sTopic_enableFreeRun = mqtt_configData["sTopic_enableFreeRun"]
 sTopic_disableFreeRun = mqtt_configData["sTopic_disableFreeRun"]
 
 sBaseColor = get_color_from_hex("#2699fb")
-sBaseGrey = get_color_from_hex("#464646")
+sBaseGreyDark = get_color_from_hex("#464646")
+sBaseGreyLight = get_color_from_hex("#A4A4A4")
 sBaseWhite = get_color_from_hex("#FFFFFF")
 sBaseBlack = get_color_from_hex("#000000")
+# sBaseColor = get_color_from_hex("#FF4B09")
 
 currentLedColor = 0
 currentDhPosition = ""
@@ -118,10 +120,10 @@ def load_job_from_id(job_id):
         tn.read_until(b"User Logged In\r\n")
         # Login Finished
         tn.write(b"SJ" + t_job_id.encode('ascii') + b"\r\n")
-        print("set Job: " + t_job_id)
+        # print("set Job: " + t_job_id)
         call_ok = str(tn.read_until(b"\r\n"), 'utf-8')
         call_ok = call_ok.replace("\r\n", "")
-        print("callOK: " + call_ok)
+        # print("callOK: " + call_ok)
         # return call_ok
         return call_ok
         tn.close()
@@ -135,7 +137,7 @@ def get_loaded_job_id():
     try:
         tn = Telnet(tn_HOST, 23, tn_timeout)
         # Login to Sensor
-        print("Telnet connected")
+        # print("Telnet connected")
         tn.read_until(b"User: ")
         tn.write(tn_user.encode('ascii') + b"\r\n")
         tn.read_until((b"Password: "))
@@ -145,11 +147,11 @@ def get_loaded_job_id():
         tn.write(b"GJ" + b"\r\n")
         call_ok = str(tn.read_until(b"\r\n"), 'utf-8')
         call_ok = call_ok.replace("\r\n", "")
-        print("callOK: " + call_ok)
+        # print("callOK: " + call_ok)
         if call_ok == "1":
             cur_jobId = str(tn.read_until(b"\r\n"), 'utf-8')
             cur_jobId = cur_jobId.replace("\r\n", "")
-            print("current loaded jobId: " + cur_jobId)
+            # print("current loaded jobId: " + cur_jobId)
         else:
             cur_jobId = 0
         return call_ok, cur_jobId
@@ -164,7 +166,7 @@ def read_job_information(job_id):
     try:
         tn = Telnet(tn_HOST, 23, tn_timeout)
         # Login to Sensor
-        print("Telnet connected")
+        # print("Telnet connected")
         tn.read_until(b"User: ")
         tn.write(tn_user.encode('ascii') + b"\r\n")
         tn.read_until((b"Password: "))
@@ -172,20 +174,20 @@ def read_job_information(job_id):
         tn.read_until(b"User Logged In\r\n")
         # Login Finished
         tn.write(b"RJ" + t_job_id.encode('ascii') + b"\r\n")
-        print("get infos from Job" + t_job_id)
+        # print("get infos from Job" + t_job_id)
         call_ok = str(tn.read_until(b"\r\n"), 'utf-8')
         call_ok = call_ok.replace("\r\n", "")
-        print("callOK: " + call_ok)
+        # print("callOK: " + call_ok)
         if call_ok == "1":
             filename = str(tn.read_until(b"\r\n"), 'utf-8')
             filename = filename.replace("\r\n", "")
             filename = filename.replace(".job", "")
             filename = filename.replace("_", " ")
             file_data = filename.split("-")
-            print("filename: " + filename)
+            # print("filename: " + filename)
             job_size = str(tn.read_until(b"\r\n"), 'utf-8')
             job_size = job_size.replace("\r\n", "")
-            print("jobSize: " + job_size)
+            # print("jobSize: " + job_size)
         else:
             file_data = ""
         return call_ok, file_data
@@ -305,11 +307,11 @@ def on_message(client, userdata, msg):
             App.get_running_app().disable_btnFilmControl = False
             App.get_running_app().disable_btnFilmMoveForward = False
             App.get_running_app().disable_btnFilmMoveBackward = False
-            BaseApp.filmInitIsFinished = False
+            MainApp.filmInitIsFinished = False
             # ScreenInitFilm.stop_init_film()
 
         if t_cur_message == 60:
-            BaseApp.filmInitIsFinished = False
+            MainApp.filmInitIsFinished = False
             # ScreenInitFilm.start_init_film()
 
         App.get_running_app().curMoveCommand = t_cur_message
@@ -379,28 +381,6 @@ def show_restartPopup():
     popup_window.open()
 
 
-class EnableFreeRunPopup(FloatLayout):
-    pass
-
-
-class DisableFreeRunPopup(FloatLayout):
-    pass
-
-
-def show_enable_freerun_popup():
-    show = EnableFreeRunPopup()
-    global efr_popupWindow
-    efr_popupWindow = Popup(title="Warning - Please Confirm", content=show, size_hint=(None, None), size=(400, 200))
-    efr_popupWindow.open()
-
-
-def show_disable_freerun_popup():
-    show = DisableFreeRunPopup()
-    global efr_popupWindow
-    efr_popupWindow = Popup(title="Leave FreeRun-Mode", content=show, size_hint=(None, None), size=(400, 200))
-    efr_popupWindow.open()
-
-
 def restart():
     command = "/usr/bin/sudo /sbin/shutdown -r now"
     import subprocess
@@ -414,10 +394,11 @@ def program_close_handler():
         client_mqtt.disconnect()
 
 
-class BaseScreenManager(ScreenManager):
+class FullScreenManager(ScreenManager):
     def __init__(self, **kwargs):
-        super(BaseScreenManager, self).__init__(**kwargs)
-        self.add_widget(ScreenInitHmi(name='screenInitHmi'))
+        super(FullScreenManager, self).__init__(**kwargs)
+        self.add_widget(FullScreenInitHmi(name='fullScreenInitHmi'))
+        self.add_widget(FullScreenHmiMenu(name='fullScreenHmiMenu'))
 
 
 class SmMainScreen(ScreenManager):
@@ -447,18 +428,19 @@ class SmFilmMoveBottom(ScreenManager):
         self.add_widget(ScreenInitFilm(name="screenInitFilm"))
         self.add_widget(ScreenButtonsSelectCameraType(name="screenButtonsSelectCameraType"))
         self.add_widget(ScreenSetVisionSensorSettings(name="screenSetVisionSensorSettings"))
-
+        self.add_widget(ScreenEnableFreeRun(name="screenEnableFreeRun"))
+        self.add_widget(ScreenFreeRunEnabled(name="screenFreeRunEnabled"))
 
 
 class BaseScreen(Screen):
     pass
 
 
-class HomeScreen(Screen):
+class FullScreenInitHmi(Screen):
     pass
 
 
-class ScreenInitHmi(Screen):
+class FullScreenHmiMenu(Screen):
     pass
 
 
@@ -475,10 +457,6 @@ class ProjectControl(Screen):
 
 
 class ScreenSettings(Screen):
-    pass
-
-
-class VisButton(ToggleButton):
     pass
 
 
@@ -521,17 +499,21 @@ class ScreenSetVisionSensorSettings(Screen):
 class ScreenSelectCameraType(Screen):
     def __init__(self, **kwargs):
         super(ScreenSelectCameraType, self).__init__(**kwargs)
-        fillUpItems = 12 - len(BaseApp.vs_presets)
-        for i in BaseApp.vs_presets:
+        fillUpItems = 12 - len(MainApp.vs_presets)
+        for i in MainApp.vs_presets:
             self.ids.rvSelectCameraType.data.append({"text": i[1] + "\n" + i[2], "presetId": i[0]})
         for i in range(fillUpItems):
             self.ids.rvSelectCameraType.data.append({"text": "", "presetId": 0})
 
 
+class ScreenEnableFreeRun(Screen):
+    pass
+
+
 class SelectCameraButton(ToggleButton):
     def on_press(self):
         print(self.presetId)
-        BaseApp.vs_selected_preset_temp = self.presetId
+        MainApp.vs_selected_preset_temp = self.presetId
 
 
 class DhButton(Button):
@@ -539,12 +521,21 @@ class DhButton(Button):
 
     def on_curDhPosition(self, *kwargs):
         if not self.curDhPosition:
-            dhBtnAni = Animation(arrowAngle=180, duration=0.2)
-            dhBtnAni.start(self)
+            dh_btn_animation = Animation(arrowAngle=180, duration=0.2)
+            dh_btn_animation.start(self)
         if self.curDhPosition:
-            dhBtnAni = Animation(arrowAngle=0, duration=0.2)
-            dhBtnAni.start(self)
+            dh_btn_animation = Animation(arrowAngle=0, duration=0.2)
+            dh_btn_animation.start(self)
 
+
+# class MoveFilmButton(Button):
+#     def on_disabled(self, *kwargs):
+#         if self.disabled == False:
+#             btn_animation = Animation(background_color=sBaseColor, duration=0.2)
+#             btn_animation.start(self)
+#         else:
+#             btn_animation = Animation(background_color=sBaseGreyDark, duration=0.2)
+#             btn_animation.start(self)
 
 class DownHolder(RelativeLayout):
     curDhPosition = BooleanProperty()
@@ -583,6 +574,10 @@ class SelectFilmInitMethod(Screen):
 
 
 class ScreenLoadFilm(Screen):
+    pass
+
+
+class ScreenFreeRunEnabled(Screen):
     pass
 
 
@@ -662,20 +657,22 @@ class InfoTextPulseLabel(Label):
 
     def __init__(self, **kwargs):
         super(InfoTextPulseLabel, self).__init__(**kwargs)
-        self.border_color = sBaseGrey
-        self.color = sBaseGrey
+        self.border_color = sBaseGreyDark
+        self.color = sBaseGreyDark
         Clock.schedule_interval(self.borderAnimation, 2)
 
     def borderAnimation(self, dtx):
         ani_border_glow = Animation(border_color=sBaseColor, color=sBaseWhite, t='in_out_quart', duration=1)
-        ani_border_glow += Animation(border_color=sBaseGrey, color=sBaseGrey, t='in_out_expo', duration=0.5)
+        ani_border_glow += Animation(border_color=sBaseGreyDark, color=sBaseGreyDark, t='in_out_expo', duration=0.5)
         ani_border_glow.start(self)
 
 
-class BaseApp(App):
+class MainApp(App):
     curDhPosition = BooleanProperty()
     btnDhArrowAngle = NumericProperty()
     dhButtonText = StringProperty()
+
+    epo_state = BooleanProperty(False)
 
     connStatus = NumericProperty(1)
     spoolDiameterFront = NumericProperty(0)
@@ -691,6 +688,7 @@ class BaseApp(App):
     disable_btnFilmControl = BooleanProperty(False)
     disable_btnStop = BooleanProperty(False)
     disable_btnFreeRun = BooleanProperty(False)
+
     visionSensor_LoadedPreset = NumericProperty(0)  # 0= Negativ / 1 = Positiv
     visionSensorConnected = BooleanProperty(False)
     mainControllerConnected = BooleanProperty(False)
@@ -704,12 +702,15 @@ class BaseApp(App):
     arcSpoolRear = NumericProperty(0)
 
     # UI Colors
-    arcColorSpoolFront = StringProperty("#ff0000")
-    arcColorSpoolRear = StringProperty("#ff0000")
     baseColor = ColorProperty(sBaseColor)
-    baseGrey = ColorProperty(sBaseGrey)
+    baseGreyDark = ColorProperty(sBaseGreyDark)
+    baseGreyLight = ColorProperty(sBaseGreyLight)
     baseWhite = ColorProperty(sBaseWhite)
     baseBlack = ColorProperty(sBaseBlack)
+
+    arcColorSpoolFront = StringProperty("#ff0000")
+    arcColorSpoolRear = StringProperty("#ff0000")
+
     ledColorWhite = ColorProperty("#FFFFFF")
     ledColorRed = ColorProperty("#FF0000")
     ledColorGreen = ColorProperty("#00FF00")
@@ -721,15 +722,35 @@ class BaseApp(App):
     ledBrightnessRed = NumericProperty(0)
     ledBrightnessGreen = NumericProperty(0)
     ledBrightnessBlue = NumericProperty(0)
+    get_ledBrightnessSlider = NumericProperty(0)
+    set_ledBrightnessSlider = NumericProperty(0)
 
     mainMenuRectPosition = NumericProperty(360)
-    filmAnimationCurPicPos = 0
-    filmAnimationCurImgSource = StringProperty("pictures/filmAnimation/Film Transport0.png")
+
+    initHmiAnimationPicPos = 100
+    initHmiAnimationBottomPath = "pictures/animations/intro_Globe/"
+    initHmiAnimationTopPath = "pictures/animations/intro_Line/"
+    initHmiAnimationBottomImgSource = StringProperty(initHmiAnimationBottomPath + "100.png")
+    initHmiAnimationTopImgSource = StringProperty(initHmiAnimationTopPath + "100.png")
+
+    filmLoadAnimationPicPos = 100
+    filmLoadAnimationBottomPath = "pictures/animations/filmLoading_Rolls/"
+    filmLoadAnimationTopPath = "pictures/animations/filmLoading_Film/"
+    filmLoadAnimationBottomImgSource = StringProperty(filmLoadAnimationBottomPath + "100.png")
+    filmLoadAnimationTopImgSource = StringProperty(filmLoadAnimationTopPath + "100.png")
+
+    filmMoveAnimationPicPos = 100
+    filmMoveAnimationBottomPath = "pictures/animations/filmMove_Rolls/"
+    filmMoveAnimationTopPath = "pictures/animations/filmMove_Film/"
+    filmMoveAnimationBottomImgSource = StringProperty(filmMoveAnimationBottomPath + "100.png")
+    filmMoveAnimationTopImgSource = StringProperty(filmMoveAnimationTopPath + "100.png")
     filmAnimationDelay = 1 / 25
 
     lastScreenIndex = 0
     curFilmTransportCenterScreen = StringProperty("screenFilmAnimation")
     curFilmTransportBottomScreen = StringProperty("screenButtonsNoFilmInsert")
+    curFullScreen = StringProperty("fullScreenInitHmi")
+    curMainScreen = StringProperty("screenFilmTransport")
 
     vs_presets = []
     vs_selected_preset_temp = 0
@@ -744,7 +765,7 @@ class BaseApp(App):
         print("cameraType changed to: " + str(self.selectedCameraType))
 
     def on_curLedColor(self, instance, value):
-        print("ledColor changed to: " + str(self.curLedColor))
+        print("led_color changed to: " + str(self.curLedColor))
 
     def on_fmc_State(self, instance, value):
         print("fmc-State changed to: " + str(self.fmc_State))
@@ -762,6 +783,10 @@ class BaseApp(App):
             self.disable_btnStop = True
 
         if self.fmc_State == 1:
+            SmFilmMoveCenter.transition = NoTransition()
+            self.curFilmTransportCenterScreen = "screenFilmAnimation"
+            SmFilmMoveBottom.transition = SlideTransition(direction="left")
+            self.curFilmTransportBottomScreen = "screenFreeRunEnabled"
             self.disable_btnFilmControl = True
             self.disable_btnFilmMoveBackward = True
             self.disable_btnFilmMoveForward = True
@@ -871,29 +896,29 @@ class BaseApp(App):
     def mainMenuControl(self, screenIndex):
         if screenIndex != self.lastScreenIndex:
             if screenIndex == 0:
-                App.get_running_app().root.ids.smMainMenu.transition.direction = "down"
-                App.get_running_app().root.ids.smMainMenu.current = "screenFilmTransport"
+                SmMainScreen.transition = SlideTransition(direction="down")
+                self.curMainScreen = "screenFilmTransport"
                 self.mainMenuRectPosition = 360
             if screenIndex == 1:
                 if screenIndex > self.lastScreenIndex:
-                    App.get_running_app().root.ids.smMainMenu.transition.direction = "up"
+                    SmMainScreen.transition = SlideTransition(direction="up")
                 else:
-                    App.get_running_app().root.ids.smMainMenu.transition.direction = "down"
-                App.get_running_app().root.ids.smMainMenu.current = "screenCameraControl"
+                    SmMainScreen.transition = SlideTransition(direction="down")
+                self.curMainScreen = "screenCameraControl"
                 self.mainMenuRectPosition = 240
             if screenIndex == 2:
                 if screenIndex > self.lastScreenIndex:
-                    App.get_running_app().root.ids.smMainMenu.transition.direction = "up"
+                    SmMainScreen.transition = SlideTransition(direction="up")
                 else:
-                    App.get_running_app().root.ids.smMainMenu.transition.direction = "down"
-                App.get_running_app().root.ids.smMainMenu.current = "screenProjectControl"
+                    SmMainScreen.transition = SlideTransition(direction="down")
+                self.curMainScreen = "screenProjectControl"
                 self.mainMenuRectPosition = 120
             if screenIndex == 3:
                 if screenIndex > self.lastScreenIndex:
-                    App.get_running_app().root.ids.smMainMenu.transition.direction = "up"
+                    SmMainScreen.transition = SlideTransition(direction="up")
                 else:
-                    App.get_running_app().root.ids.smMainMenu.transition.direction = "down"
-                App.get_running_app().root.ids.smMainMenu.current = "screenSettings"
+                    SmMainScreen.transition = SlideTransition(direction="down")
+                self.curMainScreen = "screenSettings"
                 self.mainMenuRectPosition = 0
         self.lastScreenIndex = screenIndex
 
@@ -920,15 +945,7 @@ class BaseApp(App):
 
     def updateScreen(self):
         print("Update Screen !!!")
-        App.get_running_app().root.ids.smBaseScreen.current = "screenInitHmi"
-
-    # def showFilmControlScreen(self):
-    #     if self.fmc_State == 0:
-    #         App.get_running_app().root.ids.smBaseScreen.transition.direction = "left"
-    #         App.get_running_app().root.ids.smBaseScreen.current = "screenInitFilmSelector"
-    #     if self.fmc_State > 0:
-    #         App.get_running_app().root.ids.smBaseScreen.transition.direction = "left"
-    #         App.get_running_app().root.ids.smBaseScreen.current = "screenManualControl"
+        App.get_running_app().root.ids.smBaseScreenID.current = "screenInitHmi"
 
     def sendMoveCommand(self, value):
         print("send moveCommand: " + str(value))
@@ -957,7 +974,9 @@ class BaseApp(App):
         client_mqtt.publish(sTopic_filmLoadFastForward, "false")
 
     def startFilmLoad(self):
+        client_mqtt.publish(sTopic_setLedBrightnessWhite, "2000")
         client_mqtt.publish(sTopic_startLoadFilm, "")
+        self.filmLoadAnimationPicPos = 100
 
     def stopFilmLoad(self):
         client_mqtt.publish(sTopic_stopLoadFilm, "")
@@ -965,29 +984,34 @@ class BaseApp(App):
     def startFilmInit(self):
         client_mqtt.publish(sTopic_startFilmInit, "")
 
-    def show_unlock_motors_popup(self):
-        print("fmcState: " + str(self.fmc_State))
-        if self.fmc_State > 1:
-            show_enable_freerun_popup()
-        if self.fmc_State == 1:
-            show_disable_freerun_popup()
-
     def enable_freerun(self):
         self.freeRunEnabled = True
-        self.btnFreeRunText = "Lock Motors"
+        SmFilmMoveBottom.transition = SlideTransition(direction="down")
+        self.curFilmTransportBottomScreen = "screenButtonsFilmIsInsert"
         client_mqtt.publish(sTopic_enableFreeRun, "")
-        efr_popupWindow.dismiss()
 
     def disable_freerun_with_init_film(self):
         self.freeRunEnabled = False
         self.btnFreeRunText = "Unlock Motors"
         client_mqtt.publish(sTopic_startFilmInit, "")
-        efr_popupWindow.dismiss()
+
+    def show_screen_toggle_freerun(self):
+        if self.fmc_State == 10 or self.fmc_State == 0:
+            SmFilmMoveBottom.transition = SlideTransition(direction="up")
+            self.curFilmTransportBottomScreen = "screenEnableFreeRun"
+
+    def cancel_freerun(self):
+        if self.fmc_State == 0:
+            SmFilmMoveBottom.transition = SlideTransition(direction="down")
+            self.curFilmTransportBottomScreen = "screenButtonsNoFilmInsert"
+        if self.fmc_State == 10:
+            SmFilmMoveBottom.transition = SlideTransition(direction="down")
+            self.curFilmTransportBottomScreen = "screenButtonsFilmIsInsert"
 
     def disable_freerun(self):
         self.freeRunEnabled = False
-        self.btnFreeRunText = "Unlock Motors"
         client_mqtt.publish(sTopic_disableFreeRun, "")
+        # client_mqtt.publish(sTopic_startFilmInit, "")
 
     def toggleDownHolder(self):
         if self.curDhPosition:
@@ -1005,52 +1029,22 @@ class BaseApp(App):
         self.curDhPosition = False
         self.dhButtonText = "RISE GLASS"
 
-    def setLedColor(self, ledColor):
-        self.curLedColor = ledColor
+    def setLedColor(self, led_color):
+        self.curLedColor = led_color
         if self.curLedColor == 0:
             client_mqtt.publish(sTopic_setLedColor, "Off")
         if self.curLedColor == 1:
+            self.set_ledBrightnessSlider = (self.ledBrightnessWhite - 500) / 20
             client_mqtt.publish(sTopic_setLedColor, "White")
         if self.curLedColor == 2:
+            self.set_ledBrightnessSlider = (self.ledBrightnessRed - 500) / 20
             client_mqtt.publish(sTopic_setLedColor, "Red")
         if self.curLedColor == 3:
+            self.set_ledBrightnessSlider = (self.ledBrightnessGreen - 500) / 20
             client_mqtt.publish(sTopic_setLedColor, "Green")
         if self.curLedColor == 4:
+            self.set_ledBrightnessSlider = (self.ledBrightnessBlue - 500) / 20
             client_mqtt.publish(sTopic_setLedColor, "Blue")
-
-    def on_curFilmSpeed(self, instance, value):
-        if self.curFilmSpeed > 0:
-            filmAnimationDelay = 1 / (self.curFilmSpeed / 100)
-            # print("filmAnimationDelay: " + str(filmAnimationDelay))
-            # App.get_running_app().timerUpdateAnimation.unsubscribe()
-            # App.get_running_app().timerUpdateAnimation = Clock.schedule_interval(self.updateAnimation, 1/10)
-
-    def updateAnimation(self, dt):
-        if self.curFilmMoveDirection == 1:
-            self.filmAnimationCurPicPos += 1
-            if self.filmAnimationCurPicPos > 74:
-                self.filmAnimationCurPicPos = 0
-            self.filmAnimationCurImgSource = "pictures/filmAnimation/Film Transport" + str(
-                self.filmAnimationCurPicPos) + ".png"
-
-        if self.curFilmMoveDirection == 2:
-            self.filmAnimationCurPicPos -= 1
-            if self.filmAnimationCurPicPos < 0:
-                self.filmAnimationCurPicPos = 74
-            self.filmAnimationCurImgSource = "pictures/filmAnimation/Film Transport" + str(
-                self.filmAnimationCurPicPos) + ".png"
-
-    def setLedBrightness(self, ledBrightness):
-        minBrightness = 500
-
-        if self.curLedColor == 1:
-            client_mqtt.publish(sTopic_setLedBrightnessWhite, str(minBrightness + ledBrightness * 20))
-        if self.curLedColor == 2:
-            client_mqtt.publish(sTopic_setLedBrightnessRed, str(minBrightness + ledBrightness * 20))
-        if self.curLedColor == 3:
-            client_mqtt.publish(sTopic_setLedBrightnessGreen, str(minBrightness + ledBrightness * 20))
-        if self.curLedColor == 4:
-            client_mqtt.publish(sTopic_setLedBrightnessBlue, str(minBrightness + ledBrightness * 20))
 
     def toggleLight(self, widget):
         if widget.state == "normal":
@@ -1066,9 +1060,59 @@ class BaseApp(App):
             SmFilmMoveCenter.transition = SlideTransition(direction="up")
             self.curFilmTransportCenterScreen = "screenFilmAnimation"
         if widget.state == "down":
-            print("show screen ledColor")
+            print("show screen led_color")
             SmFilmMoveCenter.transition = SlideTransition(direction="down")
             self.curFilmTransportCenterScreen = "screenSelectLedColor"
+
+    def on_curFilmSpeed(self, instance, value):
+        if self.curFilmSpeed > 0:
+            filmAnimationDelay = 1 / (self.curFilmSpeed / 100)
+            # print("filmAnimationDelay: " + str(filmAnimationDelay))
+            # App.get_running_app().timerUpdateAnimation.unsubscribe()
+            # App.get_running_app().timerUpdateAnimation = Clock.schedule_interval(self.updateAnimation, 1/10)
+
+    def updateInitHmiAnimation(self, dt):
+        if self.initHmiAnimationPicPos > 175:
+            self.initHmiAnimationPicPos = 100
+        self.initHmiAnimationBottomImgSource = self.initHmiAnimationBottomPath + str(self.initHmiAnimationPicPos) + ".png"
+        self.initHmiAnimationTopImgSource = self.initHmiAnimationTopPath + str(self.initHmiAnimationPicPos) + ".png"
+        self.initHmiAnimationPicPos += 1
+
+    def updateFilmLoadAnimation(self, dt):
+        if self.filmLoadAnimationPicPos > 324:
+            self.filmLoadAnimationPicPos = 100
+        self.filmLoadAnimationBottomImgSource = self.filmLoadAnimationBottomPath + str(self.filmLoadAnimationPicPos) + ".png"
+        self.filmLoadAnimationTopImgSource = self.filmLoadAnimationTopPath + str(self.filmLoadAnimationPicPos) + ".png"
+        self.filmLoadAnimationPicPos += 1
+
+    def updateFilmMoveAnimation(self, dt):
+        if self.curFilmMoveDirection == 1:
+            self.filmMoveAnimationPicPos += 1
+            if self.filmMoveAnimationPicPos > 174:
+                self.filmMoveAnimationPicPos = 100
+            self.filmMoveAnimationBottomImgSource = self.filmMoveAnimationBottomPath + str(self.filmMoveAnimationPicPos) + ".png"
+            self.filmMoveAnimationTopImgSource = self.filmMoveAnimationTopPath + str(self.filmMoveAnimationPicPos) + ".png"
+
+        if self.curFilmMoveDirection == 2:
+            self.filmMoveAnimationPicPos -= 1
+            if self.filmMoveAnimationPicPos < 100:
+                self.filmMoveAnimationPicPos = 174
+            self.filmMoveAnimationBottomImgSource = self.filmMoveAnimationBottomPath + str(self.filmMoveAnimationPicPos) + ".png"
+            self.filmMoveAnimationTopImgSource = self.filmMoveAnimationTopPath + str(self.filmMoveAnimationPicPos) + ".png"
+
+    def setLedBrightness(self, led_brightness):
+        min_brightness = 500
+
+        t_led_color = min_brightness + led_brightness * 20
+
+        if self.curLedColor == 1:
+            client_mqtt.publish(sTopic_setLedBrightnessWhite, str(t_led_color))
+        if self.curLedColor == 2:
+            client_mqtt.publish(sTopic_setLedBrightnessRed, str(t_led_color))
+        if self.curLedColor == 3:
+            client_mqtt.publish(sTopic_setLedBrightnessGreen, str(t_led_color))
+        if self.curLedColor == 4:
+            client_mqtt.publish(sTopic_setLedBrightnessBlue, str(t_led_color))
 
     def selectCameraTypeScreenToggle(self, show):
         if show == True:
@@ -1086,41 +1130,30 @@ class BaseApp(App):
 
     def checkInitHmiFinished(self):
         if App.get_running_app().mainControllerConnected:
-            BaseApp.checkMainControllerIsConnected.cancel()
+            MainApp.checkMainControllerIsConnected.cancel()
 
         if App.get_running_app().filmMoveControllerConnected:
-            BaseApp.checkFilmMoveControllerIsConnected.cancel()
+            MainApp.checkFilmMoveControllerIsConnected.cancel()
 
         if App.get_running_app().switchConnected:
-            BaseApp.checkSwitchIsConnected.cancel()
+            MainApp.checkSwitchIsConnected.cancel()
 
         if App.get_running_app().visionSensorConnected:
-            BaseApp.checkVisionSensorIsConnected.cancel()
+            MainApp.checkVisionSensorIsConnected.cancel()
 
         if App.get_running_app().mainControllerConnected and App.get_running_app().filmMoveControllerConnected:
             if App.get_running_app().switchConnected and App.get_running_app().visionSensorConnected:
                 App.get_running_app().initHmiDisplayFinished = True
                 print("switchScreen to HomeScreen")
-                BaseApp.checkInitHmiIsFinished.cancel()
+                FullScreenManager.transition = FadeTransition()
+                App.get_running_app().curFullScreen = "fullScreenHmiMenu"
+                MainApp.checkInitHmiIsFinished.cancel()
 
     checkVisionSensorIsConnected = Clock.schedule_interval(visionSensorIsConnected, 8)
     checkMainControllerIsConnected = Clock.schedule_interval(mainControllerIsConnected, 6)
     checkFilmMoveControllerIsConnected = Clock.schedule_interval(filmMoveControllerIsConnected, 5)
     checkSwitchIsConnected = Clock.schedule_interval(switchIsConnected, 7)
     checkInitHmiIsFinished = Clock.schedule_interval(checkInitHmiFinished, 3)
-
-    # timerUpdateAnimation = Clock.schedule_interval(updateAnimation, 1 / 25)
-
-    # def vs_get_current_job(self):
-    #     cur_job_id = get_loaded_job_id()
-    #     if cur_job_id[0] == "1":
-    #         self.vs_selected_preset = cur_job_id[1]
-    #         print("vs current jobId: " + cur_job_id[0])
-    #         cur_job_data = read_job_information(self.vs_selected_preset)
-    #         if int(cur_job_id[1]) < 200:
-    #             self.vs_loaded_film_name = cur_job_data[1][1] + " - " + cur_job_data[1][2] + " / NEG"
-    #         else:
-    #             self.vs_loaded_film_name = cur_job_data[1][1] + " - " + cur_job_data[1][2] + " / POS"
 
     def vs_load_job_list(self):
         for i in range(0, 50):
@@ -1158,12 +1191,14 @@ class BaseApp(App):
         self.vs_load_job_list()
         vs_read_current_job_information()
         self.moveDhUp()
-        timerUpdateAnimation = Clock.schedule_interval(self.updateAnimation, 1 / 25)
+        timerUpdateAnimation = Clock.schedule_interval(self.updateFilmMoveAnimation, 1 / 25)
+        timerUpdateFilmLoadAnimation = Clock.schedule_interval(self.updateFilmLoadAnimation, 1 / 25)
+        timerUpdateInitHmiAnimation = Clock.schedule_interval(self.updateInitHmiAnimation, 1 / 20)
         return BaseScreen()
 
 
 if __name__ == "__main__":
     try:
-        BaseApp().run()
+        MainApp().run()
     finally:
         program_close_handler()

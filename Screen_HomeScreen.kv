@@ -4,26 +4,25 @@
     size: [86, 120]
     background_normal: ""
     background_down: ""
-    background_color: app.baseGrey
-    #color: getHexCol("#FFFFFF") if self.state == "normal" else getHexCol("#000000")
+    background_color: app.baseGreyDark
     background_down:
     font_name: "StdFont"
     font_size: 16
-    #padding: 10,0,0,0
     border: 0,0,0,0
     canvas.before:
         Color:
-            rgb: app.baseGrey
+            rgb: app.baseGreyDark
         Line:
             rectangle: self.x, self.y, self.width, self.height
         Color:
-            rgb: app.baseGrey
+            rgb: app.baseGreyDark
     Image:
         center_x: self.parent.center_x
         center_y: self.parent.center_y
         source: root.imageSource
         color: app.baseWhite if root.state == "normal" else app.baseColor
         size: 50, 50
+
 
 <MainMenuBox@RelativeLayout>:
     rectPos: app.mainMenuRectPosition
@@ -36,7 +35,8 @@
             pos: 0, app.mainMenuRectPosition
             size: (8,120)
 
-<BaseScreen>:
+
+<FullScreenHmiMenu>:
     GridLayout:
         cols: 2
         BoxLayout:
@@ -48,31 +48,31 @@
                 orientation: 'vertical'
                 MainMenuButton:
                     id: MmFilmControl
-                    imageSource: "pictures/baseline_camera_roll_white_48pt_3x.png"
+                    imageSource: "pictures/icons/icon_film.png"
                     group: "MainMenu"
                     state: "down"
                     on_press: app.mainMenuControl(0)
 
                 MainMenuButton:
                     id: MmCameras
-                    imageSource: "pictures/baseline_linked_camera_white_48pt_3x.png"
+                    imageSource: "pictures/icons/icon_camera.png"
                     group: "MainMenu"
                     on_press: app.mainMenuControl(1)
 
                 MainMenuButton:
                     id: MmProjects
-                    imageSource: "pictures/baseline_subject_white_48pt_3x.png"
+                    imageSource: "pictures/icons/icon_list.png"
                     group: "MainMenu"
                     on_press: app.mainMenuControl(2)
 
                 MainMenuButton:
                     id: MmSettings
-                    imageSource: "pictures/baseline_miscellaneous_services_white_48pt_3x.png"
+                    imageSource: "pictures/icons/icon_settings.png"
                     group: "MainMenu"
                     on_press: app.mainMenuControl(3)
 
         SmMainScreen:
             id: smMainMenu #Put an ID to your ScreenManager class
             direction: "down"
-            current: "screenFilmTransport"
+            current: app.curMainScreen
 

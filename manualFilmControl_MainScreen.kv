@@ -21,22 +21,24 @@
             size_hint_y: None
             height: 85
             IconButtonToggle:
-                imageSource: "pictures/icon_light.png"
+                imageSource: "pictures/icons/icon_light.png"
                 on_press: app.toggleLight(self)
                 state: "down" if app.curLedColor > 0 else "normal"
             IconButtonToggle:
-                imageSource: "pictures/icon_selectColor.png"
+                imageSource: "pictures/icons/icon_selectColor.png"
                 on_press: app.toggleLedColor(self)
             DhButton:
-                imageSource: "pictures/baseline_expand_more_white_48pt_3x.png"
+                imageSource: "pictures/icons/icon_arrowDown.png"
                 arrowAngle: app.btnDhArrowAngle
                 text: app.dhButtonText
                 on_press: app.toggleDownHolder()
             IconButton:
-                imageSource: "pictures/baseline_pan_tool_white_48pt_3x.png"
+                imageSource: "pictures/icons/icon_hand.png"
+#                disabled: app.disable_btnFreeRun
+                on_press: app.show_screen_toggle_freerun()
             IconButton:
-                imageSource: "pictures/icon_epo.png"
-                on_press: app.visionSensorLoadJob()
+                imageSource: "pictures/icons/icon_epo.png"
+                on_press: app.curBaseScreen = "screenInitHmi"
 
         SmFilmMoveCenter:
             id: smFilmTransportCenterID

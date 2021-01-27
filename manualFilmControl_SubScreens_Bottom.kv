@@ -43,7 +43,7 @@
             size_hint_y: None
             height: 80
             NextPicButton:
-                imageSource: "pictures/baseline_first_page_white_48pt_3x.png"
+                imageSource: "pictures/icons/icon_prevPic.png"
                 disabled: app.disable_btnFilmControl
                 on_press: app.sendMoveCommand(20)
             SelectFilmButton:
@@ -53,7 +53,7 @@
                 on_press: app.selectCameraTypeScreenToggle(True)
 
             NextPicButton:
-                imageSource: "pictures/baseline_last_page_white_18pt_3x.png"
+                imageSource: "pictures/icons/icon_nextPic.png"
                 disabled: app.disable_btnFilmControl
                 on_press: app.sendMoveCommand(10)
 
@@ -103,13 +103,13 @@
             padding: 10,5,10,10
             size_hint_y: None
             height: 80
-            FilmLoadButton:
+            FilledButton:
                 btnText: "< CANCEL"
                 on_press: app.stopFilmLoad()
             LoadFilmFfwButton:
                 on_press: app.enable_filmLoadFastForward()
                 on_release: app.disable_filmLoadFastForward()
-            FilmLoadButton:
+            FilledButton:
                 btnText: "INIT FILM >"
                 on_press: app.startFilmInit()
 
@@ -157,11 +157,11 @@
             padding: 10,5,10,10
             size_hint_y: None
             height: 80
-            FilmLoadButton:
+            FilledButton:
                 btnText: "< CANCEL"
                 on_press: app.selectCameraTypeScreenToggle(False)
             Label:
-            FilmLoadButton:
+            FilledButton:
                 btnText: "CONFIRM >"
                 on_press: app.vs_show_load_preset_screen()
 
@@ -188,3 +188,55 @@
             size_hint_y: None
             height: 80
             Label:
+
+
+<ScreenEnableFreeRun>:
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10
+            padding: 10,10,10,5
+            size_hint_y: None
+            height: 65
+            InfoTextLabel:
+                text: "DO YOU WANT TO ENABLE HAND OPERATION MODE ?"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,5,10,10
+            size_hint_y: None
+            height: 80
+            FilledButton:
+                btnText: "NO"
+                on_press: app.cancel_freerun()
+            Label:
+            FilledButton:
+                btnText: "YES"
+                on_press: app.enable_freerun()
+
+<ScreenFreeRunEnabled>:
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10
+            padding: 10,10,10,5
+            size_hint_y: None
+            height: 65
+            InfoTextLabel:
+                text: "MACHINE IS IN HAND OPERATION MODE"
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 10,5,10,10
+            size_hint_y: None
+            height: 80
+            CancelFreeRunButton:
+                on_press: app.disable_freerun()
