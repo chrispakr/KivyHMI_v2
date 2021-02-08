@@ -26,6 +26,7 @@ import paho.mqtt.client as mqtt
 from configparser import ConfigParser
 from enum import Enum
 import sys
+import json
 
 from telnetlib import Telnet
 import getpass
@@ -39,6 +40,7 @@ import threading
 from ping3 import ping
 import pyads
 
+#python_list = json.loads(json_data)
 os.environ["KIVY_IMAGE"] = "pil"
 
 enablePlcCommunication = False
@@ -94,6 +96,12 @@ sTopic_stopLoadFilm = mqtt_configData["sTopic_stopLoadFilm"]
 sTopic_filmLoadFastForward = mqtt_configData["sTopic_filmLoadFastForward"]
 sTopic_enableFreeRun = mqtt_configData["sTopic_enableFreeRun"]
 sTopic_disableFreeRun = mqtt_configData["sTopic_disableFreeRun"]
+
+sTopic_availableJobs = mqtt_configData["sTopic_availableJobs"]
+sTopic_setVsJobId = mqtt_configData["sTopic_setVsJobId"]
+sTopic_curVsJobId = mqtt_configData["sTopic_curVsJobId"]
+sTopic_getCurJobName = mqtt_configData["sTopic_getCurJobName"]
+
 
 sBaseColor = get_color_from_hex("#2699fb")
 sBaseGreyDark = get_color_from_hex("#464646")
@@ -227,17 +235,17 @@ def set_vision_sensor_online_state(value):
 
 
 def vs_read_current_job_information():
-    cur_job_id = get_loaded_job_id()
-    if cur_job_id[0] == "1":
-        App.get_running_app().vs_selected_preset = cur_job_id[1]
-        print("vs current jobId: " + cur_job_id[1])
-        cur_job_data = read_job_information(cur_job_id[1])
-        if int(cur_job_id[1]) < 200:
-            App.get_running_app().vs_loaded_film_name = cur_job_data[1][1] + " - " + cur_job_data[1][2] + " / NEG"
+    _cur_job_id = get_loaded_job_id()
+    if _cur_job_id[0] == "1":
+        print("vs current jobId: " + _cur_job_id[1])
+        App.get_running_app().vs_cur_job_id = _cur_job_id[1]
+        cur_job_data = read_job_information(_cur_job_id[1])
+        if int(_cur_job_id[1]) < 200:
+            App.get_running_app().vs_cur_film_name = cur_job_data[1][1] + " - " + cur_job_data[1][2] + " / NEG"
         else:
-            App.get_running_app().vs_loaded_film_name = cur_job_data[1][1] + " - " + cur_job_data[1][2] + " / POS"
+            App.get_running_app().vs_cur_film_name = cur_job_data[1][1] + " - " + cur_job_data[1][2] + " / POS"
     else:
-        App.get_running_app().vs_loaded_film_name = "NO VISION SENSOR FOUND"
+        App.get_running_app().vs_cur_film_name = "NO VISION SENSOR FOUND"
 
 
 def vs_load_program(job_id):
@@ -264,6 +272,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(sTopic_fmc_State)
     client.subscribe(sTopic_curFilmMoveDirection)
     client.subscribe(sTopic_curFilmSpeed)
+    client.subscribe(sTopic_setVsJobId)
     client.publish(sTopic_setDhPosition, "Up")
     client.publish(sTopic_setLedColor, "Off")
     # App.get_running_app().connStatus = 1
@@ -344,6 +353,9 @@ def on_message(client, userdata, msg):
     if msg.topic == sTopic_curFilmSpeed:
         print("current filmSpeed: " + cur_message)
         App.get_running_app().curFilmSpeed = int(cur_message)
+    if msg.topic == sTopic_setVsJobId:
+        print("mqtt: load VisionSensor-Preset: " + cur_message)
+        App.get_running_app().vs_set_job_id = int(cur_message)
 
 
 client_mqtt = mqtt.Client()
@@ -503,11 +515,10 @@ class ScreenSelectCameraType(Screen):
         if self.update:
             print("Update VS-Preset-List")
             self.ids.rvSelectCameraType.data = []
-            print(self.ids.rvSelectCameraType.data)
-            fillUpItems = 12 - len(MainApp.vs_presets)
+            fill_up_items = 12 - len(MainApp.vs_presets)
             for i in MainApp.vs_presets:
                 self.ids.rvSelectCameraType.data.append({"text": i[1] + "\n" + i[2], "presetId": i[0]})
-            for i in range(fillUpItems):
+            for i in range(fill_up_items):
                 self.ids.rvSelectCameraType.data.append({"text": "", "presetId": 0})
             self.ids.rvSelectCameraType.refresh_from_data()
 
@@ -519,7 +530,7 @@ class ScreenEnableFreeRun(Screen):
 class SelectCameraButton(ToggleButton):
     def on_press(self):
         print(self.presetId)
-        MainApp.vs_selected_preset_temp = self.presetId
+        MainApp.vs_ui_selected_film_id = self.presetId
 
 
 class DhButton(Button):
@@ -758,12 +769,15 @@ class MainApp(App):
     curFullScreen = StringProperty("fullScreenInitHmi")
     curMainScreen = StringProperty("screenFilmTransport")
 
+    vs_ui_selected_film_id = NumericProperty(0)
+    vs_ui_selected_film_type = NumericProperty(0)
+
     vs_presets = []
-    vs_selected_preset_temp = 0
-    vs_selected_preset = 0
-    vs_selected_film_type_temp = NumericProperty(0)
-    vs_selected_film_type = NumericProperty(0)
-    vs_loaded_film_name = StringProperty("")
+    # vs_selected_preset_temp = 0
+    # vs_selected_preset = NumericProperty(0)
+    vs_set_job_id = NumericProperty(0)
+    vs_cur_job_id = NumericProperty(0)
+    vs_cur_film_name = StringProperty("")
     vs_load_preset_state = NumericProperty(0)
     vs_is_online = BooleanProperty(False)
     updateList = BooleanProperty(False)
@@ -1168,7 +1182,6 @@ class MainApp(App):
     def update_preset_list(self):
         self.updateList = False
         self.vs_load_job_list()
-        print(self.updateList)
         self.updateList = True
 
     def vs_load_job_list(self):
@@ -1180,6 +1193,11 @@ class MainApp(App):
                 self.vs_presets.append(t_presets[1])
             else:
                 break
+        self.mqtt_publish_vs_job_list()
+
+    def mqtt_publish_vs_job_list(self):
+        json_vs_job_list = json.dumps(self.vs_presets)
+        client_mqtt.publish(sTopic_availableJobs, json_vs_job_list)
 
     def vs_show_load_preset_screen(self):
         SmFilmMoveCenter.transition = NoTransition()
@@ -1194,14 +1212,24 @@ class MainApp(App):
             self.curFilmTransportBottomScreen = "screenButtonsFilmIsInsert"
 
     def vs_set_job(self):
-        self.vs_selected_film_type = self.vs_selected_film_type_temp
-        if self.vs_selected_film_type == 0:
-            self.vs_selected_preset = self.vs_selected_preset_temp
+        # self.vs_ui_selected_film_type = self.vs_ui_selected_film_id
+        if self.vs_ui_selected_film_type == 0:
+            self.vs_set_job_id = self.vs_ui_selected_film_id
         else:
-            self.vs_selected_preset = self.vs_selected_preset_temp + 100
+            self.vs_set_job_id = self.vs_ui_selected_film_id + 100
         self.vs_load_preset_state = 1
-        t = Thread(target=vs_load_program, args=(self.vs_selected_preset,))
+
+    def on_vs_set_job_id(self, instance, value):
+        print("setJobId: " + str(self.vs_set_job_id))
+        t = Thread(target=vs_load_program, args=(self.vs_set_job_id,))
         t.start()
+
+    def on_vs_cur_job_id(self,instance, value):
+        print("curJobId: " + str(self.vs_cur_job_id))
+        client_mqtt.publish(sTopic_curVsJobId, str(self.vs_cur_job_id))
+
+    def on_vs_cur_film_name(self,instance, value):
+        client_mqtt.publish(sTopic_getCurJobName, self.vs_cur_film_name)
 
     def build(self):
         # Clock.schedule_interval(self.updateSpoolArc, 0.2)

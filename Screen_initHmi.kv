@@ -44,8 +44,13 @@
 <FullScreenInitHmi>:
     on_enter: app.curScreenName = "InitHmi"
 
-#    Image:
-#        source: "pictures/BootScreen.jpg"
+    Image:
+        pos_hint: {'center_x': 0.5, 'center_y': 0.80}
+        source: "pictures/pics/geodyn_logo_bottom.png"
+    Image:
+        color: app.baseColor
+        pos_hint: {'center_x': 0.5, 'center_y': 0.80}
+        source: "pictures/pics/geodyn_logo_top.png"
     Image:
         pos_hint: {'center_x': 0.5, 'center_y': 0.5}
         source: app.initHmiAnimationBottomImgSource

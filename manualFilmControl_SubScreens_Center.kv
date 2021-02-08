@@ -53,13 +53,13 @@
             SelectFilmTypeButton:
                 text: "negative"
                 group: "posNeg"
-                state: "down" if app.vs_selected_film_type == 0 else "normal"
-                on_press: app.vs_selected_film_type_temp = 0
+                state: "down" if app.vs_ui_selected_film_type == 0 else "normal"
+                on_press: app.vs_ui_selected_film_type = 0
             SelectFilmTypeButton:
                 text: "positive"
                 group: "posNeg"
-                state: "down" if app.vs_selected_film_type == 1 else "normal"
-                on_press: app.vs_selected_film_type_temp = 1
+                state: "down" if app.vs_ui_selected_film_type == 1 else "normal"
+                on_press: app.vs_ui_selected_film_type = 1
 
         RecycleView:
             id: rvSelectCameraType
