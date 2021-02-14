@@ -684,6 +684,10 @@ class InfoTextPulseLabel(Label):
         ani_border_glow.start(self)
 
 
+def publishMqttMessage(topic, msg):
+    client_mqtt.publish(topic, msg, qos=2, retain=True)
+
+
 class MainApp(App):
     curDhPosition = BooleanProperty()
     btnDhArrowAngle = NumericProperty()
@@ -970,7 +974,7 @@ class MainApp(App):
 
     def sendMoveCommand(self, value):
         print("send moveCommand: " + str(value))
-        client_mqtt.publish(sTopic_setMoveCommand, value)
+        publishMqttMessage(sTopic_setMoveCommand, value)
 
     def visionSensorIsConnected(self):
         ping = IpCheckVisionSensor(visionSensorConnectionData["ip_address"])
@@ -989,32 +993,32 @@ class MainApp(App):
         ping.start()
 
     def enable_filmLoadFastForward(self):
-        client_mqtt.publish(sTopic_filmLoadFastForward, "true")
+        publishMqttMessage(sTopic_filmLoadFastForward, "true")
 
     def disable_filmLoadFastForward(self):
-        client_mqtt.publish(sTopic_filmLoadFastForward, "false")
+        publishMqttMessage(sTopic_filmLoadFastForward, "false")
 
     def startFilmLoad(self):
-        client_mqtt.publish(sTopic_setLedBrightnessWhite, "2000")
-        client_mqtt.publish(sTopic_startLoadFilm, "")
+        publishMqttMessage(sTopic_setLedBrightnessWhite, "2000")
+        publishMqttMessage(sTopic_startLoadFilm, "")
         self.filmLoadAnimationPicPos = 100
 
     def stopFilmLoad(self):
-        client_mqtt.publish(sTopic_stopLoadFilm, "")
+        publishMqttMessage(sTopic_stopLoadFilm, "")
 
     def startFilmInit(self):
-        client_mqtt.publish(sTopic_startFilmInit, "")
+        publishMqttMessage(sTopic_startFilmInit, "")
 
     def enable_freerun(self):
         self.freeRunEnabled = True
         SmFilmMoveBottom.transition = SlideTransition(direction="down")
         self.curFilmTransportBottomScreen = "screenButtonsFilmIsInsert"
-        client_mqtt.publish(sTopic_enableFreeRun, "")
+        publishMqttMessage(sTopic_enableFreeRun, "")
 
     def disable_freerun_with_init_film(self):
         self.freeRunEnabled = False
         self.btnFreeRunText = "Unlock Motors"
-        client_mqtt.publish(sTopic_startFilmInit, "")
+        publishMqttMessage(sTopic_startFilmInit, "")
 
     def show_screen_toggle_freerun(self):
         if self.fmc_State == 10 or self.fmc_State == 0:
@@ -1031,8 +1035,8 @@ class MainApp(App):
 
     def disable_freerun(self):
         self.freeRunEnabled = False
-        client_mqtt.publish(sTopic_disableFreeRun, "")
-        # client_mqtt.publish(sTopic_startFilmInit, "")
+        publishMqttMessage(sTopic_disableFreeRun, "")
+        # publishMqttMessage(sTopic_startFilmInit, "")
 
     def toggleDownHolder(self):
         if self.curDhPosition:
@@ -1041,39 +1045,39 @@ class MainApp(App):
             self.moveDhUp()
 
     def moveDhUp(self):
-        client_mqtt.publish(sTopic_setDhPosition, "Up")
+        publishMqttMessage(sTopic_setDhPosition, "Up")
         self.curDhPosition = True
         self.dhButtonText = "LOWER GLASS"
 
     def moveDhDown(self):
-        client_mqtt.publish(sTopic_setDhPosition, "Down")
+        publishMqttMessage(sTopic_setDhPosition, "Down")
         self.curDhPosition = False
         self.dhButtonText = "RISE GLASS"
 
     def setLedColor(self, led_color):
         self.curLedColor = led_color
         if self.curLedColor == 0:
-            client_mqtt.publish(sTopic_setLedColor, "Off")
+            publishMqttMessage(sTopic_setLedColor, "Off")
         if self.curLedColor == 1:
             self.set_ledBrightnessSlider = (self.ledBrightnessWhite - 500) / 20
-            client_mqtt.publish(sTopic_setLedColor, "White")
+            publishMqttMessage(sTopic_setLedColor, "White")
         if self.curLedColor == 2:
             self.set_ledBrightnessSlider = (self.ledBrightnessRed - 500) / 20
-            client_mqtt.publish(sTopic_setLedColor, "Red")
+            publishMqttMessage(sTopic_setLedColor, "Red")
         if self.curLedColor == 3:
             self.set_ledBrightnessSlider = (self.ledBrightnessGreen - 500) / 20
-            client_mqtt.publish(sTopic_setLedColor, "Green")
+            publishMqttMessage(sTopic_setLedColor, "Green")
         if self.curLedColor == 4:
             self.set_ledBrightnessSlider = (self.ledBrightnessBlue - 500) / 20
-            client_mqtt.publish(sTopic_setLedColor, "Blue")
+            publishMqttMessage(sTopic_setLedColor, "Blue")
 
     def toggleLight(self, widget):
         if widget.state == "normal":
             print("switch Light Off")
-            client_mqtt.publish(sTopic_setLedColor, "Off")
+            publishMqttMessage(sTopic_setLedColor, "Off")
         if widget.state == "down":
             print("switch Light On")
-            client_mqtt.publish(sTopic_setLedColor, "White")
+            publishMqttMessage(sTopic_setLedColor, "White")
 
     def toggleLedColor(self, widget):
         if widget.state == "normal":
@@ -1127,13 +1131,13 @@ class MainApp(App):
         t_led_color = min_brightness + led_brightness * 20
 
         if self.curLedColor == 1:
-            client_mqtt.publish(sTopic_setLedBrightnessWhite, str(t_led_color))
+            publishMqttMessage(sTopic_setLedBrightnessWhite, str(t_led_color))
         if self.curLedColor == 2:
-            client_mqtt.publish(sTopic_setLedBrightnessRed, str(t_led_color))
+            publishMqttMessage(sTopic_setLedBrightnessRed, str(t_led_color))
         if self.curLedColor == 3:
-            client_mqtt.publish(sTopic_setLedBrightnessGreen, str(t_led_color))
+            publishMqttMessage(sTopic_setLedBrightnessGreen, str(t_led_color))
         if self.curLedColor == 4:
-            client_mqtt.publish(sTopic_setLedBrightnessBlue, str(t_led_color))
+            publishMqttMessage(sTopic_setLedBrightnessBlue, str(t_led_color))
 
     def selectCameraTypeScreenToggle(self, show):
         self.updateList = True
@@ -1197,7 +1201,7 @@ class MainApp(App):
 
     def mqtt_publish_vs_job_list(self):
         json_vs_job_list = json.dumps(self.vs_presets)
-        client_mqtt.publish(sTopic_availableJobs, json_vs_job_list)
+        publishMqttMessage(sTopic_availableJobs, json_vs_job_list)
 
     def vs_show_load_preset_screen(self):
         SmFilmMoveCenter.transition = NoTransition()
@@ -1226,10 +1230,10 @@ class MainApp(App):
 
     def on_vs_cur_job_id(self,instance, value):
         print("curJobId: " + str(self.vs_cur_job_id))
-        client_mqtt.publish(sTopic_curVsJobId, str(self.vs_cur_job_id))
+        publishMqttMessage(sTopic_curVsJobId, str(int(self.vs_cur_job_id)))
 
     def on_vs_cur_film_name(self,instance, value):
-        client_mqtt.publish(sTopic_getCurJobName, self.vs_cur_film_name)
+        publishMqttMessage(sTopic_getCurJobName, self.vs_cur_film_name)
 
     def build(self):
         # Clock.schedule_interval(self.updateSpoolArc, 0.2)
